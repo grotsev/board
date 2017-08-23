@@ -12,12 +12,14 @@ main_model='
   main/table/voter
   main/table/option
   main/table/vote
+  main/function/*
 '
 
 main_data='
 '
 
 test_model='
+  test/test/*
 '
 
 test_data='

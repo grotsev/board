@@ -8,7 +8,6 @@ create function register
   volatile
   security definer
 as $function$
-begin
 
   insert into staff
     ( surname
@@ -23,7 +22,6 @@ begin
     , crypt(register.password, gen_salt('bf'))
     );
 
-end;
 $function$;
 
 comment on function register(textfield,textfield,date,textfield) is

@@ -1,4 +1,4 @@
-create function authenticate(
+/*create function authenticate(
   surname textfield,
   password textfield
 ) returns jwt_token
@@ -31,3 +31,4 @@ $function$;
 
 comment on function authenticate(textfield, text) is
   'Creates a JWT token that will securely identify a actor and give them ability to select authority';
+*/

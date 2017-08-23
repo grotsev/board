@@ -6,7 +6,7 @@ as $function$
 begin
 
   perform register('Гроцев', 'Денис', date '1983-08-24', 'secret');
-
+  return next pass('Ok');
 
 end;
 $function$;
