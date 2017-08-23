@@ -1,7 +1,7 @@
 create table voting
 ( voting   uuid_pk not null
 , title  textfield not null
-, period tstzrange not null
+, period tstzrange
 
 , primary key (voting)
 );
@@ -11,4 +11,4 @@ comment on table voting is
 comment on column voting.title is
   'Название';
 comment on column voting.period is
-  'Время начала и окончания';
+  'Время начала и окончания, если нет, то голосование не активно';
