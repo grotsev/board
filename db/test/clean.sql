@@ -7,4 +7,4 @@ drop owned by board cascade;
 drop role if exists authenticator;
 drop role if exists anonymous;
 drop role if exists board;
-drop role if exists board_user;
+drop role if exists staff;

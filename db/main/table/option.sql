@@ -4,8 +4,8 @@ create table option
 , title      textfield not null
 , description textarea
 
-primary key (voting, option)
-foreign key (voting) references voting
+, primary key (voting, option)
+, foreign key (voting) references voting
 );
 
 comment on table option is
