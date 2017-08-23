@@ -1,7 +1,7 @@
 create role anonymous;
 create role authenticator with login password 'changeme' in role anonymous noinherit;
 create role board         with login password 'changeme' noinherit;
-create role staff;
+create role staff         with role authenticator;
 
 comment on role anonymous     is 'No authentication is provided';
 comment on role authenticator is 'Intermediate to become anonymous or an user';

@@ -1,3 +1,5 @@
-create type jwt_token as (
-  token text
+create type jwt_token as
+( staff uuid
+, role  name
+, exp   int4
 );

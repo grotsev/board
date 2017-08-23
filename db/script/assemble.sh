@@ -21,6 +21,7 @@ main_data='
 '
 
 test_model='
+  test/function/*
   test/test/*
 '
 
