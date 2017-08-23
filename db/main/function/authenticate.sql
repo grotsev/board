@@ -1,34 +1,27 @@
-/*create function authenticate(
+create function authenticate(
   surname textfield,
   password textfield
 ) returns jwt_token
-  language plpgsql
+  language sql
   stable
   strict
   security definer
 as $function$
-declare
-  actor actor;
-begin
 
-  select a.* into actor
-  from actor a
-  where a.login = authenticate.login;
+  select sign(
+    row_to_json(r), current_setting('board.jwt_secret')
+  ) as token
+  from (
+    select staff         as staff
+         , 'staff'::text as role
+         , extract(epoch from (now() + interval '1 day'))
+                         as exp
+    from staff
+    where surname = authenticate.surname
+      and password_hash = crypt(authenticate.password, password_hash)
+  ) r;
 
-  if actor.password_hash = crypt(authenticate.password, actor.password_hash) then
-    return (
-        authenticate.login
-      , actor.actor
-      , 'anonymous'
-      , extract(epoch from (now() + interval '1 week'))
-    )::jwt_token;
-  else
-    return null;
-  end if;
-
-end;
 $function$;
 
-comment on function authenticate(textfield, text) is
-  'Creates a JWT token that will securely identify a actor and give them ability to select authority';
-*/
+comment on function authenticate(textfield,textfield) is
+  'Проверяет, что пароль соответствует фамилии и возвращает JWT токен под ролью staff на день';

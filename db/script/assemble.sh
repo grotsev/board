@@ -3,6 +3,7 @@
 mkdir -p db/build/
 
 main_model='
+  lib/extension/pgjwt
   lib/domain/code
   lib/domain/textarea
   lib/domain/textfield
@@ -12,6 +13,7 @@ main_model='
   main/table/voter
   main/table/option
   main/table/vote
+  main/type/jwt_token
   main/function/*
 '
 

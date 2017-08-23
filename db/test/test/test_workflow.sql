@@ -5,8 +5,10 @@ create function test_workflow
 as $function$
 begin
 
-  perform register('Гроцев', 'Денис', date '1983-08-24', 'secret');
+  perform register('Surname', 'Name', date '1980-01-31', 'secret');
   return next pass('Ok');
+
+  perform authenticate('Surname', 'secret');
 
 end;
 $function$;
