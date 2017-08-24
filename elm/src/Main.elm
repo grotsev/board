@@ -28,7 +28,7 @@ type alias Model =
     { route : Route
     , navState : Navbar.State
     , modalState : Modal.State
-    , loginState : Login.State
+    , loginModel : Login.Model
     }
 
 
@@ -43,17 +43,17 @@ init location =
                 { navState = navState
                 , route = Home
                 , modalState = Modal.hiddenState
-                , loginState = Login.init
+                , loginModel = Login.init
                 }
     in
-    ( model, Cmd.batch [ urlCmd, navCmd ] )
+    model ! [ urlCmd, navCmd ]
 
 
 type Msg
     = UrlChange Location
     | NavMsg Navbar.State
     | ModalMsg Modal.State
-    | AuthMsg Login.Msg
+    | LoginMsg Login.Msg
 
 
 subscriptions : Model -> Sub Msg
@@ -77,10 +77,12 @@ update msg model =
             , Cmd.none
             )
 
-        AuthMsg msg ->
-            ( { model | loginState = Login.update msg model.loginState }
-            , Cmd.none
-            )
+        LoginMsg msg ->
+            let
+                ( loginModel, cmd ) =
+                    Login.update msg model.loginModel
+            in
+            ( { model | loginModel = loginModel }, Cmd.map LoginMsg cmd )
 
 
 urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
@@ -106,10 +108,11 @@ menu model =
         |> Navbar.items
             [ Navbar.itemLink [ href <| Route.encode VotingList ] [ text "Голосования" ]
             ]
-        |> Navbar.customItems
-            [ Navbar.formItem []
-                (Login.view AuthMsg model.loginState)
-            ]
+        {- |> Navbar.customItems
+           [ Navbar.formItem []
+               (Login.view LoginMsg model.loginModel)
+           ]
+        -}
         |> Navbar.view model.navState
 
 

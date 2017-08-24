@@ -4,9 +4,11 @@ import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (for)
 import Http
-import Json.Decode as Decode
+import Json.Decode exposing (Decoder, string)
+import Json.Decode.Pipeline exposing (decode, required)
+import Jwt
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
 
@@ -33,9 +35,13 @@ type Msg
     | LogOut
 
 
-init : String -> ( Model, Cmd Msg )
-init surname =
-    { surname = surname, password = "", auth = NotAsked } ! []
+
+-- TODO String -> -- surname
+
+
+init : Model
+init =
+    { surname = "", password = "", auth = NotAsked }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -57,9 +63,13 @@ update msg model =
             { model | auth = NotAsked } ! []
 
 
-decodeAuth : Decode.Decoder Auth
+decodeAuth : Decoder Auth
 decodeAuth =
-    Debug.crash "TODO"
+    decode Auth
+        |> required "surname" string
+        |> required "name" string
+        |> required "staff" Uuid.decoder
+        |> Jwt.tokenDecoder
 
 
 getAuth : Cmd Msg
