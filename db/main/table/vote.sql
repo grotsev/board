@@ -4,7 +4,8 @@ create table vote
 , option uuid not null
 
 , primary key (voting, staff, option)
-, foreign key (voting, staff)  references voter
+, foreign key (voting)         references voting
+, foreign key (staff)          references staff
 , foreign key (voting, option) references option
 );
 

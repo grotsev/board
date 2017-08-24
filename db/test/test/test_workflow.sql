@@ -6,6 +6,8 @@ as $function$
 <<function>>
 declare
   voting uuid;
+  option_flower uuid;
+  option_cert uuid;
 begin
 
   perform register('Петров', 'Иван', date '1980-01-31', 'secret');
@@ -18,8 +20,10 @@ begin
 
   select new_voting('День рождения Веры') into voting;
 
-  perform new_option(voting, 'Цветы');
-  perform new_option(voting, 'Подарочный сертификат');
+  select new_option(voting, 'Цветы') into option_flower;
+  select new_option(voting, 'Подарочный сертификат') into option_cert;
+
+  perform new_vote(voting, option_flower);
 
 end;
 $function$;

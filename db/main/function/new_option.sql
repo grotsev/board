@@ -8,8 +8,14 @@ create function new_option
   security definer
 as $function$
 
-  insert into option (voting, title)
-  values (new_option.voting, new_option.title)
+  insert into option
+    ( voting
+    , title
+    )
+  values
+    ( new_option.voting
+    , new_option.title
+    )
   returning option;
 
 $function$;

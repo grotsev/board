@@ -10,7 +10,6 @@ main_model='
   lib/domain/uuid_pk
   main/table/staff
   main/table/voting
-  main/table/voter
   main/table/option
   main/table/vote
   main/type/jwt_token
