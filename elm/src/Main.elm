@@ -148,6 +148,7 @@ routeHome model =
                             [ text "Start" ]
                     ]
                 |> Card.view
+            , Login.view LoginMsg model.loginModel
             ]
         , Grid.col []
             [ Card.config [ Card.outlineDanger ]

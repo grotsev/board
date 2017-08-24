@@ -6,8 +6,9 @@ import Bootstrap.Form.Input as Input
 import Html exposing (..)
 import Html.Attributes exposing (for)
 import Http
-import Json.Decode exposing (Decoder, string)
+import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
+import Json.Encode as Encode exposing (Value)
 import Jwt
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
@@ -54,7 +55,7 @@ update msg model =
             { model | password = password } ! []
 
         LogIn ->
-            { model | auth = Loading } ! [ getAuth ]
+            { model | auth = Loading } ! [ postAuth model ]
 
         AuthResponse auth ->
             { model | auth = auth } ! []
@@ -66,18 +67,26 @@ update msg model =
 decodeAuth : Decoder Auth
 decodeAuth =
     decode Auth
-        |> required "surname" string
-        |> required "name" string
+        |> required "surname" Decode.string
+        |> required "name" Decode.string
         |> required "staff" Uuid.decoder
         |> Jwt.tokenDecoder
 
 
-getAuth : Cmd Msg
-getAuth =
-    Http.get "/rpc/login" decodeAuth
-        -- TODO args
+postAuth : Model -> Cmd Msg
+postAuth model =
+    Http.post "http://localhost:3001/rpc/login" (body model) decodeAuth
         |> RemoteData.sendRequest
         |> Cmd.map AuthResponse
+
+
+body : Model -> Http.Body
+body { surname, password } =
+    Http.jsonBody <|
+        Encode.object
+            [ ( "surname", Encode.string surname )
+            , ( "password", Encode.string password )
+            ]
 
 
 view : (Msg -> msg) -> Model -> Html msg
