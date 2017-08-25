@@ -10,13 +10,13 @@ declare
   option_cert uuid;
 begin
 
-  perform register('Петров', 'Иван', date '1980-01-31', 'secret');
-  perform register('Николаева', 'Вера', date '1980-02-01', 'secret');
+  perform register('pet', 'Петров', 'Иван', date '1980-01-31', 'secret');
+  perform register('nic', 'Николаева', 'Вера', date '1980-02-01', 'secret');
 
-  return next is(authenticate('Петров', 'secretZ'), null, 'Wrong pasword');
-  return next is((authenticate('Петров', 'secret')).role, 'staff', 'Right pasword');
+  return next is((login('pet', 'secreZ')).role, null, 'Wrong pasword');
+  return next is((login('pet', 'secret')).role, 'staff', 'Right pasword');
 
-  perform mock_login('Петров', 'secret');
+  perform mock_login('pet', 'secret');
 
   select new_voting('День рождения Веры') into voting;
 

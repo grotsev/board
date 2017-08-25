@@ -1,26 +1,28 @@
 create function mock_login
-( surname  textfield
+( login    textfield
 , password textfield
-) returns text
+, out staff        uuid
+, out role         name
+, out exp          int4
+, out surname textfield
+, out name    textfield
+, out token        text
+)
   language plpgsql
 as $function$
-declare
-  token jwt_token;
 begin
-  select (authenticate(surname, password)).* into token;
+  select (login(login, password)).* into staff, role, exp, surname, name, token;
 
-  if (token is null) then
-    raise 'Fail to authenticate(%, %)', surname, password;
+  if not found then -- TODO check not found select login() or from login()
+    raise 'Fail to authenticate(%, %)', login, password;
   end if;
 
-  execute $$set local request.jwt.claim.staff = '$$ || token.staff || $$'$$;
-  execute $$set local request.jwt.claim.role  = '$$ || token.role  || $$'$$;
-  execute $$set local request.jwt.claim.exp   = '$$ || token.exp   || $$'$$;
-  execute $$set local role $$ || token.role;
-
-  return login(surname, password);
+  execute $$set local request.jwt.claim.staff = '$$ || staff || $$'$$;
+  execute $$set local request.jwt.claim.role  = '$$ || role  || $$'$$;
+  execute $$set local request.jwt.claim.exp   = '$$ || exp   || $$'$$;
+  execute $$set local role $$ || role;
 end;
 $function$;
 
 comment on function mock_login(textfield,textfield) is
-  'Тестовая версия проверяет, что пароль соответствует фамилии и возвращает JWT токен под ролью staff на день и инициализирует GUC';
+  'Тестовая версия проверяет, что пароль соответствует логину и генерирует JWT токен под ролью staff на день и инициализирует GUC';

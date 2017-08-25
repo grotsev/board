@@ -1,5 +1,6 @@
 create function register
-( surname  textfield
+( login    textfield
+, surname  textfield
 , name     textfield
 , dob           date
 , password textfield
@@ -9,14 +10,19 @@ create function register
   security definer
 as $function$
 
+  -- TODO reject_insecure(register.password)
+  -- TODO or check secure() and trigger on update, insert do crypt
+
   insert into staff
-    ( surname
+    ( login
+    , surname
     , name
     , dob
     , password_hash
     )
   values
-    ( register.surname
+    ( register.login
+    , register.surname
     , register.name
     , register.dob
     , crypt(register.password, gen_salt('bf'))
@@ -24,5 +30,5 @@ as $function$
 
 $function$;
 
-comment on function register(textfield,textfield,date,textfield) is
+comment on function register(textfield,textfield,textfield,date,textfield) is
   'Зарегистрировать нового сотрудника';

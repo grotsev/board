@@ -126,6 +126,7 @@ view toMsg model =
                 [ surnameGroup ()
                 , passwordGroup ()
                 , Button.button [ Button.primary, Button.onClick <| toMsg LogIn ] [ text "Войти" ]
+                , text <| toString err
                 ]
 
         Success auth ->
