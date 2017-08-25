@@ -1,4 +1,4 @@
-module Login exposing (..)
+module Login exposing (Auth, State, init, view)
 
 import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
@@ -7,17 +7,13 @@ import Bootstrap.Form.Input as Input
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as DP
-import Json.Encode as Encode exposing (Value)
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
 
 
-type alias Model =
+type alias State =
     { login : String
     , password : String
-    , auth : WebData Auth
     }
 
 
@@ -31,100 +27,70 @@ type alias Auth =
     }
 
 
-type Msg
-    = LoginInput String
-    | PasswordInput String
-    | LogIn
-    | AuthResponse (WebData Auth)
-    | LogOut
-
-
 
 -- TODO String -> -- login
+-- TODO Config
 
 
-init : Model
+init : State
 init =
-    { login = "", password = "", auth = NotAsked }
+    { login = "", password = "" }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        LoginInput login ->
-            { model | login = login } ! []
-
-        PasswordInput password ->
-            { model | password = password } ! []
-
-        LogIn ->
-            { model | auth = Loading } ! [ postAuth model ]
-
-        AuthResponse auth ->
-            { model | auth = auth } ! []
-
-        LogOut ->
-            { model | auth = NotAsked, password = "" } ! []
-
-
-decodeAuth : Decoder Auth
-decodeAuth =
-    DP.decode Auth
-        |> DP.required "staff" Uuid.decoder
-        |> DP.required "role" Decode.string
-        |> DP.required "exp" Decode.int
-        |> DP.required "surname" Decode.string
-        |> DP.required "name" Decode.string
-        |> DP.required "token" Decode.string
-
-
-postAuth : Model -> Cmd Msg
-postAuth model =
-    Http.request
-        { method = "POST"
-        , headers = [ Http.header "Accept" "application/vnd.pgrst.object+json" ]
-        , url = "http://localhost:3001/rpc/login"
-        , body = body model
-        , expect = Http.expectJson decodeAuth
-        , timeout = Nothing
-        , withCredentials = False
-        }
-        |> RemoteData.sendRequest
-        |> Cmd.map AuthResponse
-
-
-body : Model -> Http.Body
-body { login, password } =
-    Http.jsonBody <|
-        Encode.object
-            [ ( "login", Encode.string login )
-            , ( "password", Encode.string password )
-            ]
-
-
-view : (Msg -> msg) -> Model -> Html msg
-view toMsg model =
+view : (State -> WebData Auth -> msg) -> State -> WebData Auth -> Html msg
+view onChange state auth =
     let
-        loginGroup =
-            \() ->
-                Form.group []
-                    [ Form.label [ for "login" ] [ text "Логин" ]
-                    , Input.text [ Input.value model.login, Input.onInput (toMsg << LoginInput) ]
+        loginGroup _ =
+            Form.group []
+                [ Form.label [ for "login" ] [ text "Логин" ]
+                , Input.text
+                    [ Input.value state.login
+                    , Input.onInput <| \login -> onChange { state | login = login } auth
                     ]
+                ]
 
-        passwordGroup =
-            \() ->
-                Form.group []
-                    [ Form.label [ for "password" ] [ text "Пароль" ]
-                    , Input.password [ Input.value model.password, Input.onInput (toMsg << PasswordInput) ]
+        passwordGroup _ =
+            Form.group []
+                [ Form.label [ for "password" ] [ text "Пароль" ]
+                , Input.password
+                    [ Input.value state.password
+                    , Input.onInput <| \password -> onChange { state | password = password } auth
                     ]
+                ]
+
+        onLogIn _ =
+            Button.onClick <| onChange state Loading
+
+        {- Http.request
+           { method = "POST"
+           , headers = [ Http.header "Accept" "application/vnd.pgrst.object+json" ]
+           , url = "http://localhost:3001/rpc/login"
+           , body = body state
+           , expect = Http.expectJson decodeAuth
+           , timeout = Nothing
+           , withCredentials = False
+           }
+           |> RemoteData.sendRequest
+           |> Cmd.map AuthResponse
+           |> onChange state Loading
+        -}
+        onLogOut _ =
+            Button.onClick <| onChange { state | password = "" } NotAsked
+
+        errDescription err =
+            case err of
+                Http.BadPayload _ _ ->
+                    "Неверный логин и пароль"
+
+                _ ->
+                    "Внутренняя ошибка"
     in
-    case model.auth of
+    case auth of
         NotAsked ->
             Form.form []
                 [ loginGroup ()
                 , passwordGroup ()
-                , Button.button [ Button.primary, Button.onClick <| toMsg LogIn ] [ text "Войти" ]
+                , Button.button [ Button.primary, onLogIn () ] [ text "Войти" ]
                 ]
 
         Loading ->
@@ -135,27 +101,18 @@ view toMsg model =
                 ]
 
         Failure err ->
-            let
-                errDescription =
-                    case err of
-                        Http.BadPayload _ _ ->
-                            "Неверный логин и пароль"
-
-                        _ ->
-                            "Внутренняя ошибка"
-            in
             div []
                 [ Form.form []
                     [ loginGroup ()
                     , passwordGroup ()
-                    , Button.button [ Button.primary, Button.onClick <| toMsg LogIn ] [ text "Войти" ]
+                    , Button.button [ Button.primary, onLogIn () ] [ text "Войти" ]
                     ]
-                , Alert.warning [ text errDescription ]
+                , Alert.warning [ text <| errDescription err ]
                 ]
 
         Success auth ->
             Form.form []
                 [ text auth.surname
                 , text auth.name
-                , Button.button [ Button.onClick <| toMsg LogOut ] [ text "Выйти" ]
+                , Button.button [ onLogOut () ] [ text "Выйти" ]
                 ]

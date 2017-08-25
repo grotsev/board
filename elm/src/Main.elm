@@ -11,7 +11,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Login
 import Navigation exposing (Location)
+import RemoteData exposing (WebData)
 import Route exposing (Route(..))
+import Rpc.Login
 
 
 main : Program Never Model Msg
@@ -28,7 +30,8 @@ type alias Model =
     { route : Route
     , navState : Navbar.State
     , modalState : Modal.State
-    , loginModel : Login.Model
+    , loginState : Login.State
+    , loginAuth : WebData Login.Auth
     }
 
 
@@ -43,7 +46,8 @@ init location =
                 { navState = navState
                 , route = Home
                 , modalState = Modal.hiddenState
-                , loginModel = Login.init
+                , loginState = Login.init
+                , loginAuth = RemoteData.NotAsked
                 }
     in
     model ! [ urlCmd, navCmd ]
@@ -53,7 +57,8 @@ type Msg
     = UrlChange Location
     | NavMsg Navbar.State
     | ModalMsg Modal.State
-    | LoginMsg Login.Msg
+    | LoginMsg Login.State (WebData Login.Auth)
+    | LoginResponse (WebData Login.Auth)
 
 
 subscriptions : Model -> Sub Msg
@@ -77,12 +82,20 @@ update msg model =
             , Cmd.none
             )
 
-        LoginMsg msg ->
-            let
-                ( loginModel, cmd ) =
-                    Login.update msg model.loginModel
-            in
-            ( { model | loginModel = loginModel }, Cmd.map LoginMsg cmd )
+        LoginMsg state auth ->
+            ( { model | loginState = state, loginAuth = auth }
+            , case auth of
+                RemoteData.Loading ->
+                    Cmd.map LoginResponse (Rpc.Login.call state)
+
+                _ ->
+                    Cmd.none
+            )
+
+        LoginResponse auth ->
+            ( { model | loginAuth = auth }
+            , Cmd.none
+            )
 
 
 urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
@@ -110,7 +123,7 @@ menu model =
             ]
         {- |> Navbar.customItems
            [ Navbar.formItem []
-               (Login.view LoginMsg model.loginModel)
+               (Login.view LoginMsg model.loginState)
            ]
         -}
         |> Navbar.view model.navState
@@ -148,7 +161,7 @@ routeHome model =
                             [ text "Start" ]
                     ]
                 |> Card.view
-            , Login.view LoginMsg model.loginModel
+            , Login.view LoginMsg model.loginState model.loginAuth
             ]
         , Grid.col []
             [ Card.config [ Card.outlineDanger ]
