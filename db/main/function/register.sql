@@ -1,9 +1,9 @@
 create function register
 ( login    textfield
+, password textfield
 , surname  textfield
 , name     textfield
 , dob           date
-, password textfield
 ) returns void
   language sql
   volatile
@@ -30,5 +30,5 @@ as $function$
 
 $function$;
 
-comment on function register(textfield,textfield,textfield,date,textfield) is
+comment on function register(textfield,textfield,textfield,textfield,date) is
   'Зарегистрировать нового сотрудника';
