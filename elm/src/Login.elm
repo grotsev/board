@@ -1,13 +1,14 @@
 module Login exposing (..)
 
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Html exposing (..)
-import Html.Attributes exposing (for)
+import Html.Attributes exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode.Pipeline as DP
 import Json.Encode as Encode exposing (Value)
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
@@ -63,18 +64,18 @@ update msg model =
             { model | auth = auth } ! []
 
         LogOut ->
-            { model | auth = NotAsked } ! []
+            { model | auth = NotAsked, password = "" } ! []
 
 
 decodeAuth : Decoder Auth
 decodeAuth =
-    decode Auth
-        |> required "staff" Uuid.decoder
-        |> required "role" Decode.string
-        |> required "exp" Decode.int
-        |> required "surname" Decode.string
-        |> required "name" Decode.string
-        |> required "token" Decode.string
+    DP.decode Auth
+        |> DP.required "staff" Uuid.decoder
+        |> DP.required "role" Decode.string
+        |> DP.required "exp" Decode.int
+        |> DP.required "surname" Decode.string
+        |> DP.required "name" Decode.string
+        |> DP.required "token" Decode.string
 
 
 postAuth : Model -> Cmd Msg
@@ -108,14 +109,14 @@ view toMsg model =
             \() ->
                 Form.group []
                     [ Form.label [ for "login" ] [ text "Логин" ]
-                    , Input.text [ Input.onInput (toMsg << LoginInput) ]
+                    , Input.text [ Input.value model.login, Input.onInput (toMsg << LoginInput) ]
                     ]
 
         passwordGroup =
             \() ->
                 Form.group []
                     [ Form.label [ for "password" ] [ text "Пароль" ]
-                    , Input.password [ Input.onInput (toMsg << PasswordInput) ]
+                    , Input.password [ Input.value model.password, Input.onInput (toMsg << PasswordInput) ]
                     ]
     in
     case model.auth of
@@ -134,11 +135,22 @@ view toMsg model =
                 ]
 
         Failure err ->
-            Form.form []
-                [ loginGroup ()
-                , passwordGroup ()
-                , Button.button [ Button.primary, Button.onClick <| toMsg LogIn ] [ text "Войти" ]
-                , text <| toString err
+            let
+                errDescription =
+                    case err of
+                        Http.BadPayload _ _ ->
+                            "Неверный логин и пароль"
+
+                        _ ->
+                            "Внутренняя ошибка"
+            in
+            div []
+                [ Form.form []
+                    [ loginGroup ()
+                    , passwordGroup ()
+                    , Button.button [ Button.primary, Button.onClick <| toMsg LogIn ] [ text "Войти" ]
+                    ]
+                , Alert.warning [ text errDescription ]
                 ]
 
         Success auth ->
