@@ -9,27 +9,29 @@ import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode as Encode exposing (Value)
-import Jwt
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
 
 
 type alias Model =
-    { surname : String
+    { login : String
     , password : String
     , auth : WebData Auth
     }
 
 
 type alias Auth =
-    { surname : String
+    { staff : Uuid
+    , role : String
+    , exp : Int
+    , surname : String
     , name : String
-    , staff : Uuid
+    , token : String
     }
 
 
 type Msg
-    = SurnameInput String
+    = LoginInput String
     | PasswordInput String
     | LogIn
     | AuthResponse (WebData Auth)
@@ -37,19 +39,19 @@ type Msg
 
 
 
--- TODO String -> -- surname
+-- TODO String -> -- login
 
 
 init : Model
 init =
-    { surname = "", password = "", auth = NotAsked }
+    { login = "", password = "", auth = NotAsked }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SurnameInput surname ->
-            { model | surname = surname } ! []
+        LoginInput login ->
+            { model | login = login } ! []
 
         PasswordInput password ->
             { model | password = password } ! []
@@ -67,24 +69,34 @@ update msg model =
 decodeAuth : Decoder Auth
 decodeAuth =
     decode Auth
+        |> required "staff" Uuid.decoder
+        |> required "role" Decode.string
+        |> required "exp" Decode.int
         |> required "surname" Decode.string
         |> required "name" Decode.string
-        |> required "staff" Uuid.decoder
-        |> Jwt.tokenDecoder
+        |> required "token" Decode.string
 
 
 postAuth : Model -> Cmd Msg
 postAuth model =
-    Http.post "http://localhost:3001/rpc/login" (body model) decodeAuth
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Accept" "application/vnd.pgrst.object+json" ]
+        , url = "http://localhost:3001/rpc/login"
+        , body = body model
+        , expect = Http.expectJson decodeAuth
+        , timeout = Nothing
+        , withCredentials = False
+        }
         |> RemoteData.sendRequest
         |> Cmd.map AuthResponse
 
 
 body : Model -> Http.Body
-body { surname, password } =
+body { login, password } =
     Http.jsonBody <|
         Encode.object
-            [ ( "surname", Encode.string surname )
+            [ ( "login", Encode.string login )
             , ( "password", Encode.string password )
             ]
 
@@ -92,11 +104,11 @@ body { surname, password } =
 view : (Msg -> msg) -> Model -> Html msg
 view toMsg model =
     let
-        surnameGroup =
+        loginGroup =
             \() ->
                 Form.group []
-                    [ Form.label [ for "surname" ] [ text "Фамилия" ]
-                    , Input.text [ Input.onInput (toMsg << SurnameInput) ]
+                    [ Form.label [ for "login" ] [ text "Логин" ]
+                    , Input.text [ Input.onInput (toMsg << LoginInput) ]
                     ]
 
         passwordGroup =
@@ -109,21 +121,21 @@ view toMsg model =
     case model.auth of
         NotAsked ->
             Form.form []
-                [ surnameGroup ()
+                [ loginGroup ()
                 , passwordGroup ()
                 , Button.button [ Button.primary, Button.onClick <| toMsg LogIn ] [ text "Войти" ]
                 ]
 
         Loading ->
             Form.form []
-                [ surnameGroup ()
+                [ loginGroup ()
                 , passwordGroup ()
                 , Button.button [ Button.disabled True ] [ text "Войти" ] -- TODO loader spinner
                 ]
 
         Failure err ->
             Form.form []
-                [ surnameGroup ()
+                [ loginGroup ()
                 , passwordGroup ()
                 , Button.button [ Button.primary, Button.onClick <| toMsg LogIn ] [ text "Войти" ]
                 , text <| toString err
