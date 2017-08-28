@@ -29,42 +29,38 @@ type alias Auth =
 
 init : State
 init =
-    { login = "", password = "" }
+    -- TODO set to "" or from cookies
+    { login = "pet", password = "secret" }
 
 
 view : (State -> WebData Auth -> msg) -> State -> WebData Auth -> Html msg
-view onChange state auth =
+view onChange state authData =
     let
-        loginGroup _ =
-            Form.group []
-                [ Form.label [ for "login" ] [ text "Логин" ]
-                , Input.text
-                    [ Input.value state.login
-                    , Input.onInput <| \login -> onChange { state | login = login } auth
-                    ]
-                ]
-
-        passwordGroup _ =
-            Form.group []
-                [ Form.label [ for "password" ] [ text "Пароль" ]
-                , Input.password
-                    [ Input.value state.password
-                    , Input.onInput <| \password -> onChange { state | password = password } auth
-                    ]
-                ]
-
-        loginButton active =
+        form activeLoginButton =
             let
                 options =
-                    if active then
+                    if activeLoginButton then
                         [ Button.primary, Button.onClick <| onChange state Loading ]
                     else
                         [ Button.disabled True ]
             in
-            Button.button options [ text "Войти" ]
-
-        onLogOut _ =
-            Button.onClick <| onChange { state | password = "" } NotAsked
+            Form.form []
+                [ Form.group []
+                    [ Form.label [ for "login" ] [ text "Логин" ]
+                    , Input.text
+                        [ Input.value state.login
+                        , Input.onInput <| \login -> onChange { state | login = login } authData
+                        ]
+                    ]
+                , Form.group []
+                    [ Form.label [ for "password" ] [ text "Пароль" ]
+                    , Input.password
+                        [ Input.value state.password
+                        , Input.onInput <| \password -> onChange { state | password = password } authData
+                        ]
+                    ]
+                , Button.button options [ text "Войти" ] -- TODO loader spinner
+                ]
 
         errDescription err =
             case err of
@@ -74,30 +70,21 @@ view onChange state auth =
                 _ ->
                     "Внутренняя ошибка"
     in
-    case auth of
+    case authData of
         NotAsked ->
-            Form.form []
-                [ loginGroup ()
-                , passwordGroup ()
-                , loginButton True
-                ]
+            form True
 
         Loading ->
-            Form.form []
-                [ loginGroup ()
-                , passwordGroup ()
-                , loginButton False -- TODO loader spinner
-                ]
+            form False
 
         Failure err ->
             div []
-                [ Form.form []
-                    [ loginGroup ()
-                    , passwordGroup ()
-                    , loginButton True
-                    ]
+                [ form True
                 , Alert.warning [ text <| errDescription err ]
                 ]
 
         Success auth ->
-            Button.button [ onLogOut () ] [ text "Выйти" ]
+            Button.button
+                [ Button.onClick <| onChange { state | password = "" } NotAsked
+                ]
+                [ text "Выйти" ]

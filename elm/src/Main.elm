@@ -31,7 +31,7 @@ type alias Model =
     , navState : Main.Menu.State
     , modalState : Modal.State
     , loginState : Login.State
-    , loginAuth : WebData Login.Auth
+    , authData : WebData Login.Auth
     }
 
 
@@ -47,7 +47,7 @@ init location =
                 , route = Home
                 , modalState = Modal.hiddenState
                 , loginState = Login.init
-                , loginAuth = RemoteData.NotAsked -- TODO rename
+                , authData = RemoteData.NotAsked
                 }
     in
     model ! [ urlCmd, navCmd ]
@@ -82,9 +82,9 @@ update msg model =
             , Cmd.none
             )
 
-        LoginMsg state auth ->
-            ( { model | loginState = state, loginAuth = auth }
-            , case auth of
+        LoginMsg state authData ->
+            ( { model | loginState = state, authData = authData }
+            , case authData of
                 RemoteData.Loading ->
                     Cmd.map LoginResponse (Rpc.Login.call state)
 
@@ -92,8 +92,8 @@ update msg model =
                     Cmd.none
             )
 
-        LoginResponse auth ->
-            ( { model | loginAuth = auth }
+        LoginResponse authData ->
+            ( { model | authData = authData }
             , Cmd.none
             )
 
@@ -105,20 +105,20 @@ urlUpdate location model =
 
 view : Model -> Html Msg
 view model =
-    case model.loginAuth of
-        RemoteData.Success loginAuth ->
+    case model.authData of
+        RemoteData.Success auth ->
             let
                 logoutButton =
-                    Login.view LoginMsg model.loginState model.loginAuth
+                    Login.view LoginMsg model.loginState model.authData
             in
             div []
-                [ Main.Menu.view NavMsg model.navState { name = loginAuth.name, surname = loginAuth.surname } logoutButton
+                [ Main.Menu.view NavMsg model.navState auth logoutButton
                 , mainContent model
                 , modal model
                 ]
 
         _ ->
-            Login.view LoginMsg model.loginState model.loginAuth
+            Login.view LoginMsg model.loginState model.authData
 
 
 mainContent : Model -> Html Msg
