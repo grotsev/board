@@ -8,9 +8,10 @@ import RemoteData exposing (WebData)
 import Uuid exposing (Uuid)
 
 
-type alias In =
-    { login : String
-    , password : String
+type alias In a =
+    { a
+        | login : String
+        , password : String
     }
 
 
@@ -24,7 +25,7 @@ type alias Out =
     }
 
 
-call : In -> Cmd (WebData Out)
+call : In a -> Cmd (WebData Out)
 call =
     rpc
         { url = "http://localhost:3001/rpc/login"
