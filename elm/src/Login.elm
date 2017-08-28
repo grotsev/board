@@ -27,11 +27,6 @@ type alias Auth =
     }
 
 
-
--- TODO String -> -- login
--- TODO Config
-
-
 init : State
 init =
     { login = "", password = "" }
@@ -58,22 +53,16 @@ view onChange state auth =
                     ]
                 ]
 
-        onLogIn _ =
-            Button.onClick <| onChange state Loading
+        loginButton active =
+            let
+                options =
+                    if active then
+                        [ Button.primary, Button.onClick <| onChange state Loading ]
+                    else
+                        [ Button.disabled True ]
+            in
+            Button.button options [ text "Войти" ]
 
-        {- Http.request
-           { method = "POST"
-           , headers = [ Http.header "Accept" "application/vnd.pgrst.object+json" ]
-           , url = "http://localhost:3001/rpc/login"
-           , body = body state
-           , expect = Http.expectJson decodeAuth
-           , timeout = Nothing
-           , withCredentials = False
-           }
-           |> RemoteData.sendRequest
-           |> Cmd.map AuthResponse
-           |> onChange state Loading
-        -}
         onLogOut _ =
             Button.onClick <| onChange { state | password = "" } NotAsked
 
@@ -90,14 +79,14 @@ view onChange state auth =
             Form.form []
                 [ loginGroup ()
                 , passwordGroup ()
-                , Button.button [ Button.primary, onLogIn () ] [ text "Войти" ]
+                , loginButton True
                 ]
 
         Loading ->
             Form.form []
                 [ loginGroup ()
                 , passwordGroup ()
-                , Button.button [ Button.disabled True ] [ text "Войти" ] -- TODO loader spinner
+                , loginButton False -- TODO loader spinner
                 ]
 
         Failure err ->
@@ -105,7 +94,7 @@ view onChange state auth =
                 [ Form.form []
                     [ loginGroup ()
                     , passwordGroup ()
-                    , Button.button [ Button.primary, onLogIn () ] [ text "Войти" ]
+                    , loginButton True
                     ]
                 , Alert.warning [ text <| errDescription err ]
                 ]
