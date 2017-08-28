@@ -111,8 +111,4 @@ view onChange state auth =
                 ]
 
         Success auth ->
-            Form.form []
-                [ text auth.surname
-                , text auth.name
-                , Button.button [ onLogOut () ] [ text "Выйти" ]
-                ]
+            Button.button [ onLogOut () ] [ text "Выйти" ]

@@ -47,7 +47,7 @@ init location =
                 , route = Home
                 , modalState = Modal.hiddenState
                 , loginState = Login.init
-                , loginAuth = RemoteData.NotAsked
+                , loginAuth = RemoteData.NotAsked -- TODO rename
                 }
     in
     model ! [ urlCmd, navCmd ]
@@ -105,15 +105,24 @@ urlUpdate location model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ menu model
-        , mainContent model
-        , modal model
-        ]
+    case model.loginAuth of
+        RemoteData.Success loginAuth ->
+            let
+                logoutButton =
+                    Login.view LoginMsg model.loginState model.loginAuth
+            in
+            div []
+                [ menu model loginAuth logoutButton
+                , mainContent model
+                , modal model
+                ]
+
+        _ ->
+            Login.view LoginMsg model.loginState model.loginAuth
 
 
-menu : Model -> Html Msg
-menu model =
+menu : Model -> Login.Auth -> Html Msg -> Html Msg
+menu model auth logoutButton =
     Navbar.config NavMsg
         |> Navbar.withAnimation
         |> Navbar.container
@@ -121,11 +130,13 @@ menu model =
         |> Navbar.items
             [ Navbar.itemLink [ href <| Route.encode VotingList ] [ text "Голосования" ]
             ]
-        {- |> Navbar.customItems
-           [ Navbar.formItem []
-               (Login.view LoginMsg model.loginState)
-           ]
-        -}
+        |> Navbar.customItems
+            [ Navbar.formItem []
+                [ text auth.surname
+                , text auth.name
+                , logoutButton
+                ]
+            ]
         |> Navbar.view model.navState
 
 
@@ -161,7 +172,6 @@ routeHome model =
                             [ text "Start" ]
                     ]
                 |> Card.view
-            , Login.view LoginMsg model.loginState model.loginAuth
             ]
         , Grid.col []
             [ Card.config [ Card.outlineDanger ]
@@ -194,8 +204,8 @@ routeGettingStarted model =
 
 routeNotFound : List (Html Msg)
 routeNotFound =
-    [ h1 [] [ text "Not found" ]
-    , text "SOrry couldn't find that route"
+    [ h1 [] [ text "Страница не найдена" ]
+    , text "Страница где-то рядом"
     ]
 
 
