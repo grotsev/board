@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import Bootstrap.Button as Button
-import Bootstrap.Card as Card
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
@@ -13,6 +12,8 @@ import Main.Menu
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Route exposing (Route(..))
+import Route.Home
+import Route.NotFound
 import Rpc.Login
 
 
@@ -123,51 +124,19 @@ view model =
 
 mainContent : Model -> Html Msg
 mainContent model =
-    Grid.container [] <|
+    Grid.container [ class "mt-sm-5" ] <|
         case model.route of
             Home ->
-                routeHome model
+                Route.Home.view
 
             VotingList ->
                 routeGettingStarted model
 
             NotFound ->
-                routeNotFound
+                Route.NotFound.view
 
             _ ->
                 Debug.crash "TODO"
-
-
-routeHome : Model -> List (Html Msg)
-routeHome model =
-    [ h1 [] [ text "Home" ]
-    , Grid.row []
-        [ Grid.col []
-            [ Card.config [ Card.outlinePrimary ]
-                |> Card.headerH4 [] [ text "Getting started" ]
-                |> Card.block []
-                    [ Card.text [] [ text "Getting started is real easy. Just click the start button." ]
-                    , Card.custom <|
-                        Button.linkButton
-                            [ Button.primary, Button.attrs [ href "#getting-started" ] ]
-                            [ text "Start" ]
-                    ]
-                |> Card.view
-            ]
-        , Grid.col []
-            [ Card.config [ Card.outlineDanger ]
-                |> Card.headerH4 [] [ text "Modules" ]
-                |> Card.block []
-                    [ Card.text [] [ text "Check out the modules overview" ]
-                    , Card.custom <|
-                        Button.linkButton
-                            [ Button.primary, Button.attrs [ href "#modules" ] ]
-                            [ text "Module" ]
-                    ]
-                |> Card.view
-            ]
-        ]
-    ]
 
 
 routeGettingStarted : Model -> List (Html Msg)
@@ -180,13 +149,6 @@ routeGettingStarted model =
         , Button.attrs [ onClick <| ModalMsg Modal.visibleState ]
         ]
         [ text "Click me" ]
-    ]
-
-
-routeNotFound : List (Html Msg)
-routeNotFound =
-    [ h1 [] [ text "Страница не найдена" ]
-    , text "Страница где-то рядом"
     ]
 
 
