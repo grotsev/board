@@ -5,11 +5,11 @@ import Bootstrap.Card as Card
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Bootstrap.Navbar as Navbar
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Login
+import Main.Menu
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Route exposing (Route(..))
@@ -28,7 +28,7 @@ main =
 
 type alias Model =
     { route : Route
-    , navState : Navbar.State
+    , navState : Main.Menu.State
     , modalState : Modal.State
     , loginState : Login.State
     , loginAuth : WebData Login.Auth
@@ -39,7 +39,7 @@ init : Location -> ( Model, Cmd Msg )
 init location =
     let
         ( navState, navCmd ) =
-            Navbar.initialState NavMsg
+            Main.Menu.initialState NavMsg
 
         ( model, urlCmd ) =
             urlUpdate location
@@ -55,7 +55,7 @@ init location =
 
 type Msg
     = UrlChange Location
-    | NavMsg Navbar.State
+    | NavMsg Main.Menu.State
     | ModalMsg Modal.State
     | LoginMsg Login.State (WebData Login.Auth)
     | LoginResponse (WebData Login.Auth)
@@ -63,7 +63,7 @@ type Msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Navbar.subscriptions model.navState NavMsg
+    Main.Menu.subscriptions model.navState NavMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -112,32 +112,13 @@ view model =
                     Login.view LoginMsg model.loginState model.loginAuth
             in
             div []
-                [ menu model loginAuth logoutButton
+                [ Main.Menu.view NavMsg model.navState { name = loginAuth.name, surname = loginAuth.surname } logoutButton
                 , mainContent model
                 , modal model
                 ]
 
         _ ->
             Login.view LoginMsg model.loginState model.loginAuth
-
-
-menu : Model -> Login.Auth -> Html Msg -> Html Msg
-menu model auth logoutButton =
-    Navbar.config NavMsg
-        |> Navbar.withAnimation
-        |> Navbar.container
-        |> Navbar.brand [ href "#" ] [ text "greetgo! Board" ]
-        |> Navbar.items
-            [ Navbar.itemLink [ href <| Route.encode VotingList ] [ text "Голосования" ]
-            ]
-        |> Navbar.customItems
-            [ Navbar.formItem []
-                [ text auth.surname
-                , text auth.name
-                , logoutButton
-                ]
-            ]
-        |> Navbar.view model.navState
 
 
 mainContent : Model -> Html Msg
