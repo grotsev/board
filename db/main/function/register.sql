@@ -1,10 +1,14 @@
 create function register
-( login    textfield
-, password textfield
-, surname  textfield
-, name     textfield
+( login       textfield
+, password    textfield
+, in out surname     textfield
+, in out name        textfield
 , dob           date
-) returns void
+, out staff        uuid
+, out role         name
+, out exp          int4
+, out token        text
+) returns record
   language sql
   volatile
   security definer
@@ -27,6 +31,9 @@ as $function$
     , register.dob
     , crypt(register.password, gen_salt('bf'))
     );
+
+  select surname, name, staff, role, exp, token
+  from login(login, password) t(staff, role, exp, surname, name, token);
 
 $function$;
 
