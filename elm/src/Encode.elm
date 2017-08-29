@@ -1,10 +1,11 @@
 module Encode exposing (..)
 
 import Date exposing (Date)
-import Date.Extra as Date
+import Date.Extra.Config.Config_ru_ru exposing (config)
+import Date.Extra.Format as Date
 import Json.Encode as Encode
 
 
 date : Date -> Encode.Value
 date =
-    Date.toFormattedString "yyyy-MM-dd" >> Encode.string
+    Date.format config Date.isoDateFormat >> Encode.string
