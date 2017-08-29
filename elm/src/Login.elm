@@ -6,6 +6,7 @@ import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
+import Field
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
@@ -60,7 +61,8 @@ view onLogin state authData =
                         [ Button.disabled True ]
             in
             Form.form []
-                [ Form.group []
+                [ Field.view (\x -> onLogin state authData) { id = "login", title = "логин" } (Field.StringValue "zzz")
+                , Form.group []
                     [ Form.label [ for "login" ] [ text "логин" ]
                     , Input.text
                         [ Input.value state.login
