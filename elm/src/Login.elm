@@ -6,7 +6,7 @@ import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
-import Field
+import Field exposing (Field)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
@@ -49,6 +49,16 @@ init =
     }
 
 
+fields : List (Field String)
+fields =
+    [ { id = "login", title = "логин" }
+    , { id = "password", title = "пароль" }
+    , { id = "passwordAgain", title = "ещё раз пароль" }
+    , { id = "surname", title = "фамилия" }
+    , { id = "name", title = "имя" }
+    ]
+
+
 view : (State -> WebData Auth -> msg) -> State -> WebData Auth -> Html msg
 view onLogin state authData =
     let
@@ -59,55 +69,60 @@ view onLogin state authData =
                         [ Button.primary, Button.onClick <| onLogin state Loading ]
                     else
                         [ Button.disabled True ]
+
+                toMsg =
+                    \x -> onLogin state authData
             in
             Form.form []
-                [ Field.view (\x -> onLogin state authData) { id = "login", title = "логин" } (Field.StringValue "zzz")
-                , Form.group []
-                    [ Form.label [ for "login" ] [ text "логин" ]
-                    , Input.text
-                        [ Input.value state.login
-                        , Input.onInput <| \login -> onLogin { state | login = login } authData
-                        ]
-                    ]
-                , Form.group []
-                    [ Form.label [ for "password" ] [ text "пароль" ]
-                    , Input.password
-                        [ Input.value state.password
-                        , Input.onInput <| \password -> onLogin { state | password = password } authData
-                        ]
-                    ]
-                , Button.button options [ text "войти" ] -- TODO loader spinner
-                , Form.group []
-                    [ Form.label [ for "passwordAgain" ] [ text "ещё раз пароль" ]
-                    , Input.password
-                        [ Input.value state.passwordAgain
-                        , Input.onInput <| \passwordAgain -> onLogin { state | passwordAgain = passwordAgain } authData
-                        ]
-                    ]
-                , Form.group []
-                    [ Form.label [ for "surname" ] [ text "фамилия" ]
-                    , Input.text
-                        [ Input.value state.surname
-                        , Input.onInput <| \surname -> onLogin { state | surname = surname } authData
-                        ]
-                    ]
-                , Form.group []
-                    [ Form.label [ for "name" ] [ text "имя" ]
-                    , Input.text
-                        [ Input.value state.name
-                        , Input.onInput <| \name -> onLogin { state | name = name } authData
-                        ]
-                    ]
-                , Form.group []
-                    [ Form.label [ for "dob" ] [ text "дата рождения" ]
-                    , Input.text
-                        [ Input.value state.dob
-                        , Input.onInput <| \dob -> onLogin { state | dob = dob } authData
-                        ]
-                    ]
-                , Button.button options [ text "зарегистрироваться" ] -- TODO loader spinner
-                ]
+                (List.map (\f -> Field.view toMsg f (Field.StringValue "zzz")) fields)
 
+        {- [ Field.view toMsg fields (Field.StringValue "zzz")
+           , Form.group []
+               [ Form.label [ for "login" ] [ text "логин" ]
+               , Input.text
+                   [ Input.value state.login
+                   , Input.onInput <| \login -> onLogin { state | login = login } authData
+                   ]
+               ]
+           , Form.group []
+               [ Form.label [ for "password" ] [ text "пароль" ]
+               , Input.password
+                   [ Input.value state.password
+                   , Input.onInput <| \password -> onLogin { state | password = password } authData
+                   ]
+               ]
+           , Button.button options [ text "войти" ] -- TODO loader spinner
+           , Form.group []
+               [ Form.label [ for "passwordAgain" ] [ text "ещё раз пароль" ]
+               , Input.password
+                   [ Input.value state.passwordAgain
+                   , Input.onInput <| \passwordAgain -> onLogin { state | passwordAgain = passwordAgain } authData
+                   ]
+               ]
+           , Form.group []
+               [ Form.label [ for "surname" ] [ text "фамилия" ]
+               , Input.text
+                   [ Input.value state.surname
+                   , Input.onInput <| \surname -> onLogin { state | surname = surname } authData
+                   ]
+               ]
+           , Form.group []
+               [ Form.label [ for "name" ] [ text "имя" ]
+               , Input.text
+                   [ Input.value state.name
+                   , Input.onInput <| \name -> onLogin { state | name = name } authData
+                   ]
+               ]
+           , Form.group []
+               [ Form.label [ for "dob" ] [ text "дата рождения" ]
+               , Input.text
+                   [ Input.value state.dob
+                   , Input.onInput <| \dob -> onLogin { state | dob = dob } authData
+                   ]
+               ]
+           , Button.button options [ text "зарегистрироваться" ] -- TODO loader spinner
+           ]
+        -}
         errDescription err =
             case err of
                 Http.BadPayload _ _ ->

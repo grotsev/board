@@ -1,4 +1,4 @@
-module Field exposing (..)
+module Field exposing (Field, Msg, Value(..), update, view)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
@@ -6,9 +6,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-type alias Msg a =
-    { target : a
+type alias Msg id =
+    { target : id
     , value : Value
+    }
+
+
+type alias Field id =
+    { id : id
+    , title : String
     }
 
 
@@ -17,13 +23,7 @@ type Value
     | StringValue String -- TODO shorter rename
 
 
-type alias Field a =
-    { id : a
-    , title : String
-    }
-
-
-view : (Msg a -> msg) -> Field a -> Value -> Html msg
+view : (Msg id -> msg) -> Field id -> Value -> Html msg
 view toMsg { id, title } value =
     let
         pack : { value : String, parse : String -> Value }
@@ -63,7 +63,7 @@ view toMsg { id, title } value =
 -}
 
 
-update : Msg a -> Field a -> Value -> Value
+update : Msg id -> Field id -> Value -> Value
 update { target, value } { id, title } oldValue =
     if id == target then
         value
