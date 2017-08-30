@@ -5,6 +5,7 @@ module Login exposing (Auth, State, init, view)
 import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
+import Bootstrap.Tab as Tab
 import Field
 import Html exposing (..)
 import Http
@@ -21,7 +22,8 @@ type alias State =
     , passwordAgain : String
     , surname : String
     , name : String
-    , dob : String -- TODO Maybe Date
+    , dob : String -- TODO Maybe Date and DatePicker
+    , tabState : Tab.State
     }
 
 
@@ -44,54 +46,71 @@ init =
     , surname = ""
     , name = ""
     , dob = "" -- TODO Nothing
+    , tabState = Tab.initialState
     }
 
 
 view : (State -> WebData Auth -> msg) -> State -> WebData Auth -> Html msg
 view onLogin state authData =
     let
-        form activeLoginButton =
+        tab activeLoginButton =
             let
                 options =
                     if activeLoginButton then
                         [ Button.primary, Button.onClick <| onLogin state Loading ]
                     else
                         [ Button.disabled True ]
+
+                form =
+                    Form.form []
+                        [ Field.input
+                            "login"
+                            "логин"
+                            (\x -> onLogin { state | login = x } authData)
+                            state.login
+                        , Field.password
+                            "password"
+                            "пароль"
+                            (\x -> onLogin { state | password = x } authData)
+                            state.password
+                        , Button.button options [ text "войти" ] -- TODO loader spinner
+                        , Field.password
+                            "passwordAgain"
+                            "ещё раз пароль"
+                            (\x -> onLogin { state | passwordAgain = x } authData)
+                            state.passwordAgain
+                        , Field.input
+                            "surname"
+                            "фамилия"
+                            (\x -> onLogin { state | surname = x } authData)
+                            state.surname
+                        , Field.input
+                            "name"
+                            "имя"
+                            (\x -> onLogin { state | name = x } authData)
+                            state.name
+                        , Field.input
+                            "dob"
+                            "дата рождения"
+                            (\x -> onLogin { state | dob = x } authData)
+                            state.dob
+                        , Button.button options [ text "зарегистрироваться" ] -- TODO loader spinner
+                        ]
             in
-            Form.form []
-                [ Field.input
-                    "login"
-                    "логин"
-                    (\x -> onLogin { state | login = x } authData)
-                    state.login
-                , Field.password
-                    "password"
-                    "пароль"
-                    (\x -> onLogin { state | password = x } authData)
-                    state.password
-                , Button.button options [ text "войти" ] -- TODO loader spinner
-                , Field.password
-                    "passwordAgain"
-                    "ещё раз пароль"
-                    (\x -> onLogin { state | passwordAgain = x } authData)
-                    state.passwordAgain
-                , Field.input
-                    "surname"
-                    "фамилия"
-                    (\x -> onLogin { state | surname = x } authData)
-                    state.surname
-                , Field.input
-                    "name"
-                    "имя"
-                    (\x -> onLogin { state | name = x } authData)
-                    state.name
-                , Field.input
-                    "dob"
-                    "дата рождения"
-                    (\x -> onLogin { state | dob = x } authData)
-                    state.dob
-                , Button.button options [ text "зарегистрироваться" ] -- TODO loader spinner
-                ]
+            Tab.config (\x -> onLogin { state | tabState = x } authData)
+                |> Tab.items
+                    [ Tab.item
+                        { id = "tab1"
+                        , link = Tab.link [] [ text "Tab 1" ]
+                        , pane = Tab.pane [] [ form ]
+                        }
+                    , Tab.item
+                        { id = "tab2"
+                        , link = Tab.link [] [ text "Tab 2" ]
+                        , pane = Tab.pane [] [ form ]
+                        }
+                    ]
+                |> Tab.view state.tabState
 
         errDescription err =
             case err of
@@ -103,14 +122,14 @@ view onLogin state authData =
     in
     case authData of
         NotAsked ->
-            form True
+            tab True
 
         Loading ->
-            form False
+            tab False
 
         Failure err ->
             div []
-                [ form True
+                [ tab True
                 , Alert.warning [ text <| errDescription err ]
                 ]
 
