@@ -53,61 +53,84 @@ init =
 view : (State -> WebData Auth -> msg) -> State -> WebData Auth -> Html msg
 view onLogin state authData =
     let
-        tab activeLoginButton =
-            let
-                options =
-                    if activeLoginButton then
-                        [ Button.primary, Button.onClick <| onLogin state Loading ]
-                    else
-                        [ Button.disabled True ]
+        buttonOptions active =
+            if active then
+                [ Button.primary, Button.onClick <| onLogin state Loading ]
+            else
+                [ Button.disabled True ]
 
-                form =
-                    Form.form []
-                        [ Field.input
-                            "login"
-                            "логин"
-                            (\x -> onLogin { state | login = x } authData)
-                            state.login
-                        , Field.password
-                            "password"
-                            "пароль"
-                            (\x -> onLogin { state | password = x } authData)
-                            state.password
-                        , Button.button options [ text "войти" ] -- TODO loader spinner
-                        , Field.password
-                            "passwordAgain"
-                            "ещё раз пароль"
-                            (\x -> onLogin { state | passwordAgain = x } authData)
-                            state.passwordAgain
-                        , Field.input
-                            "surname"
-                            "фамилия"
-                            (\x -> onLogin { state | surname = x } authData)
-                            state.surname
-                        , Field.input
-                            "name"
-                            "имя"
-                            (\x -> onLogin { state | name = x } authData)
-                            state.name
-                        , Field.input
-                            "dob"
-                            "дата рождения"
-                            (\x -> onLogin { state | dob = x } authData)
-                            state.dob
-                        , Button.button options [ text "зарегистрироваться" ] -- TODO loader spinner
-                        ]
-            in
+        login =
+            Field.input
+                "login"
+                "логин"
+                (\x -> onLogin { state | login = x } authData)
+                state.login
+
+        password =
+            Field.password
+                "password"
+                "пароль"
+                (\x -> onLogin { state | password = x } authData)
+                state.password
+
+        passwordAgain =
+            Field.password
+                "passwordAgain"
+                "ещё раз пароль"
+                (\x -> onLogin { state | passwordAgain = x } authData)
+                state.passwordAgain
+
+        surname =
+            Field.input
+                "surname"
+                "фамилия"
+                (\x -> onLogin { state | surname = x } authData)
+                state.surname
+
+        name =
+            Field.input
+                "name"
+                "имя"
+                (\x -> onLogin { state | name = x } authData)
+                state.name
+
+        dob =
+            Field.input
+                "dob"
+                "дата рождения"
+                (\x -> onLogin { state | dob = x } authData)
+                state.dob
+
+        loginForm active =
+            Form.form []
+                [ login
+                , password
+                , Button.button (buttonOptions active) [ text "войти" ] -- TODO loader spinner
+                ]
+
+        registerForm active =
+            Form.form []
+                [ login
+                , password
+                , passwordAgain
+                , surname
+                , name
+                , dob
+                , Button.button (buttonOptions active) [ text "зарегистрироваться" ] -- TODO loader spinner
+                ]
+
+        tab active =
             Tab.config (\x -> onLogin { state | tabState = x } authData)
                 |> Tab.items
                     [ Tab.item
-                        { id = "tab1"
-                        , link = Tab.link [] [ text "Tab 1" ]
-                        , pane = Tab.pane [] [ form ]
+                        { id = "loginTab"
+                        , link = Tab.link [] [ text "Вход" ]
+                        , pane = Tab.pane [] [ loginForm active ]
                         }
                     , Tab.item
-                        { id = "tab2"
-                        , link = Tab.link [] [ text "Tab 2" ]
-                        , pane = Tab.pane [] [ form ]
+                        { id = "registerTab"
+                        , link = Tab.link [] [ text "Регистрация" ]
+                        , pane = Tab.pane [] [ registerForm active ]
                         }
                     ]
                 |> Tab.view state.tabState
