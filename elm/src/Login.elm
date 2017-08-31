@@ -1,4 +1,4 @@
-module Login exposing (Auth, State, init, view)
+module Login exposing (Auth, Mode(..), State, init, view)
 
 -- TODO import Date exposing (Date)
 
@@ -6,8 +6,11 @@ import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Tab as Tab
+import Date exposing (Date)
+import DateTimePicker
 import Field
 import Html exposing (..)
+import Html.Attributes as Attr
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
@@ -22,9 +25,15 @@ type alias State =
     , passwordAgain : String
     , surname : String
     , name : String
-    , dob : String -- TODO Maybe Date and DatePicker
+    , dobState : DateTimePicker.State
+    , dob : Maybe Date -- TODO Maybe Date and DatePicker
     , tabState : Tab.State
     }
+
+
+type Mode
+    = Login
+    | Register
 
 
 type alias Auth =
@@ -45,17 +54,18 @@ init =
     , passwordAgain = ""
     , surname = ""
     , name = ""
-    , dob = "" -- TODO Nothing
+    , dobState = DateTimePicker.initialState
+    , dob = Just <| Date.fromTime 0 -- TODO Nothing
     , tabState = Tab.initialState
     }
 
 
-view : (State -> WebData Auth -> msg) -> State -> WebData Auth -> Html msg
+view : (State -> Mode -> WebData Auth -> msg) -> State -> WebData Auth -> Html msg
 view onLogin state authData =
     let
-        buttonOptions active =
+        buttonOptions active mode =
             if active then
-                [ Button.primary, Button.onClick <| onLogin state Loading ]
+                [ Button.primary, Button.onClick <| onLogin state mode Loading ]
             else
                 [ Button.disabled True ]
 
@@ -63,49 +73,53 @@ view onLogin state authData =
             Field.input
                 "login"
                 "логин"
-                (\x -> onLogin { state | login = x } authData)
+                (\x -> onLogin { state | login = x } Login authData)
                 state.login
 
         password =
             Field.password
                 "password"
                 "пароль"
-                (\x -> onLogin { state | password = x } authData)
+                (\x -> onLogin { state | password = x } Login authData)
                 state.password
 
         passwordAgain =
             Field.password
                 "passwordAgain"
                 "ещё раз пароль"
-                (\x -> onLogin { state | passwordAgain = x } authData)
+                (\x -> onLogin { state | passwordAgain = x } Login authData)
                 state.passwordAgain
 
         surname =
             Field.input
                 "surname"
                 "фамилия"
-                (\x -> onLogin { state | surname = x } authData)
+                (\x -> onLogin { state | surname = x } Login authData)
                 state.surname
 
         name =
             Field.input
                 "name"
                 "имя"
-                (\x -> onLogin { state | name = x } authData)
+                (\x -> onLogin { state | name = x } Login authData)
                 state.name
 
         dob =
-            Field.input
-                "dob"
-                "дата рождения"
-                (\x -> onLogin { state | dob = x } authData)
-                state.dob
+            Form.group []
+                [ Form.label [ Attr.for "dob" ] [ text "дата рождения" ]
+                , DateTimePicker.datePicker
+                    (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
+                    []
+                    -- TODO Input.id id
+                    state.dobState
+                    state.dob
+                ]
 
         loginForm active =
             Form.form []
                 [ login
                 , password
-                , Button.button (buttonOptions active) [ text "войти" ] -- TODO loader spinner
+                , Button.button (buttonOptions active Login) [ text "войти" ] -- TODO loader spinner
                 ]
 
         registerForm active =
@@ -116,11 +130,11 @@ view onLogin state authData =
                 , surname
                 , name
                 , dob
-                , Button.button (buttonOptions active) [ text "зарегистрироваться" ] -- TODO loader spinner
+                , Button.button (buttonOptions active Register) [ text "зарегистрироваться" ] -- TODO loader spinner
                 ]
 
         tab active =
-            Tab.config (\x -> onLogin { state | tabState = x } authData)
+            Tab.config (\x -> onLogin { state | tabState = x } Login authData)
                 |> Tab.items
                     [ Tab.item
                         { id = "loginTab"
@@ -158,6 +172,6 @@ view onLogin state authData =
 
         Success auth ->
             Button.button
-                [ Button.onClick <| onLogin { state | password = "" } NotAsked
+                [ Button.onClick <| onLogin { state | password = "" } Login NotAsked
                 ]
                 [ text "Выйти" ]

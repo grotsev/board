@@ -4,6 +4,7 @@ import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
+import Date.Extra.Core as Date
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -15,6 +16,7 @@ import Route exposing (Route(..))
 import Route.Home
 import Route.NotFound
 import Rpc.Login
+import Rpc.Register
 
 
 main : Program Never Model Msg
@@ -58,7 +60,7 @@ type Msg
     = UrlChange Location
     | NavMsg Main.Menu.State
     | ModalMsg Modal.State
-    | LoginMsg Login.State (WebData Login.Auth)
+    | LoginMsg Login.State Login.Mode (WebData Login.Auth)
     | LoginResponse (WebData Login.Auth)
 
 
@@ -83,11 +85,21 @@ update msg model =
             , Cmd.none
             )
 
-        LoginMsg state authData ->
+        LoginMsg state mode authData ->
             ( { model | loginState = state, authData = authData }
             , case authData of
                 RemoteData.Loading ->
-                    Cmd.map LoginResponse (Rpc.Login.call state)
+                    let
+                        rpc =
+                            case mode of
+                                Login.Login ->
+                                    Rpc.Login.call
+
+                                Login.Register ->
+                                    Rpc.Register.call
+                                        << (\r -> { r | dob = Maybe.withDefault (Date.fromTime 0) state.dob })
+                    in
+                    Cmd.map LoginResponse <| rpc state
 
                 _ ->
                     Cmd.none
