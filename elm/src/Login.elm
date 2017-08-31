@@ -71,37 +71,37 @@ view onLogin state authData =
                 [ Button.disabled True ]
 
         login prefix =
-            Field.row prefix "login" "Логин" <|
+            Field.row (prefix ++ "login") "Логин" <|
                 Field.text
                     (\x -> onLogin { state | login = x } Login authData)
                     state.login
 
         password prefix =
-            Field.row prefix "password" "Пароль" <|
+            Field.row (prefix ++ "password") "Пароль" <|
                 Field.password
                     (\x -> onLogin { state | password = x } Login authData)
                     state.password
 
         passwordAgain =
-            Field.row "" "passwordAgain" "Ещё раз пароль" <|
+            Field.row "passwordAgain" "Ещё раз пароль" <|
                 Field.password
                     (\x -> onLogin { state | passwordAgain = x } Login authData)
                     state.passwordAgain
 
         surname =
-            Field.row "" "surname" "Фамилия" <|
+            Field.row "surname" "Фамилия" <|
                 Field.text
                     (\x -> onLogin { state | surname = x } Login authData)
                     state.surname
 
         name =
-            Field.row "" "name" "Имя" <|
+            Field.row "name" "Имя" <|
                 Field.text
                     (\x -> onLogin { state | name = x } Login authData)
                     state.name
 
         dob =
-            Field.row "" "dob" "Дата рождения" <|
+            Field.row "dob" "Дата рождения" <|
                 \id ->
                     DateTimePicker.datePicker
                         (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
