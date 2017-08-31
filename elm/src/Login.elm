@@ -68,49 +68,43 @@ view onLogin state authData =
                 [ Button.disabled True ]
 
         login =
-            Field.input
-                "login"
-                "логин"
-                (\x -> onLogin { state | login = x } Login authData)
-                state.login
+            Field.group "login" "логин" <|
+                Field.text
+                    (\x -> onLogin { state | login = x } Login authData)
+                    state.login
 
         password =
-            Field.password
-                "password"
-                "пароль"
-                (\x -> onLogin { state | password = x } Login authData)
-                state.password
+            Field.group "password" "пароль" <|
+                Field.password
+                    (\x -> onLogin { state | password = x } Login authData)
+                    state.password
 
         passwordAgain =
-            Field.password
-                "passwordAgain"
-                "ещё раз пароль"
-                (\x -> onLogin { state | passwordAgain = x } Login authData)
-                state.passwordAgain
+            Field.group "passwordAgain" "ещё раз пароль" <|
+                Field.password
+                    (\x -> onLogin { state | passwordAgain = x } Login authData)
+                    state.passwordAgain
 
         surname =
-            Field.input
-                "surname"
-                "фамилия"
-                (\x -> onLogin { state | surname = x } Login authData)
-                state.surname
+            Field.group "surname" "фамилия" <|
+                Field.text
+                    (\x -> onLogin { state | surname = x } Login authData)
+                    state.surname
 
         name =
-            Field.input
-                "name"
-                "имя"
-                (\x -> onLogin { state | name = x } Login authData)
-                state.name
+            Field.group "name" "имя" <|
+                Field.text
+                    (\x -> onLogin { state | name = x } Login authData)
+                    state.name
 
         dob =
-            Form.group []
-                [ Form.label [ Attr.for "dob" ] [ text "дата рождения" ]
-                , DateTimePicker.datePicker
-                    (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
-                    [ Attr.id "dob" ]
-                    state.dobState
-                    state.dob
-                ]
+            Field.group "dob" "дата рождения" <|
+                \id ->
+                    DateTimePicker.datePicker
+                        (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
+                        [ Attr.id id ]
+                        state.dobState
+                        state.dob
 
         loginForm active =
             Form.form []
