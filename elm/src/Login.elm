@@ -11,7 +11,7 @@ import DateTimePicker
 import Field
 import Html exposing (..)
 import Html.Attributes as Attr
-import Http
+import I18n.Error as Error
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
 
@@ -147,26 +147,6 @@ view onLogin state authData =
                         }
                     ]
                 |> Tab.view state.tabState
-
-        errDescription err =
-            case err of
-                Http.BadPayload _ _ ->
-                    "Неверный логин и пароль"
-
-                Http.BadStatus { url, status, headers, body } ->
-                    let
-                        { code, message } =
-                            status
-                    in
-                    case message of
-                        "Conflict" ->
-                            "Такой пользователь уже существует"
-
-                        _ ->
-                            "Внутренняя ошибка" ++ toString err
-
-                _ ->
-                    "Внутренняя ошибка" ++ toString err
     in
     case authData of
         NotAsked ->
@@ -178,7 +158,7 @@ view onLogin state authData =
         Failure err ->
             div []
                 [ tab True
-                , Alert.warning [ text <| errDescription err ]
+                , Alert.warning [ text <| Error.http err ]
                 ]
 
         Success auth ->

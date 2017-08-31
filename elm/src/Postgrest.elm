@@ -1,7 +1,8 @@
 module Postgrest exposing (..)
 
 import Http
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode
+import Json.Decode.Pipeline as DP
 import Json.Encode as Encode exposing (Value)
 import RemoteData exposing (WebData)
 
@@ -9,7 +10,15 @@ import RemoteData exposing (WebData)
 type alias Rpc a b =
     { url : String
     , encoder : a -> Encode.Value
-    , decoder : Decoder b
+    , decoder : Decode.Decoder b
+    }
+
+
+type alias Error =
+    { hint : Maybe String
+    , detail : Maybe String
+    , code : Maybe String
+    , message : Maybe String
     }
 
 
@@ -33,3 +42,12 @@ rpcList { encoder, decoder, url } request =
         Http.post url
             (Http.jsonBody <| encoder request)
             (Decode.list decoder)
+
+
+errorDecoder : Decode.Decoder Error
+errorDecoder =
+    DP.decode Error
+        |> DP.required "hint" (Decode.nullable Decode.string)
+        |> DP.required "detail" (Decode.nullable Decode.string)
+        |> DP.required "code" (Decode.nullable Decode.string)
+        |> DP.required "message" (Decode.nullable Decode.string)
