@@ -109,8 +109,7 @@ view onLogin state authData =
                 [ Form.label [ Attr.for "dob" ] [ text "дата рождения" ]
                 , DateTimePicker.datePicker
                     (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
-                    []
-                    -- TODO Input.id id
+                    [ Attr.id "dob" ]
                     state.dobState
                     state.dob
                 ]
@@ -154,8 +153,20 @@ view onLogin state authData =
                 Http.BadPayload _ _ ->
                     "Неверный логин и пароль"
 
+                Http.BadStatus { url, status, headers, body } ->
+                    let
+                        { code, message } =
+                            status
+                    in
+                    case message of
+                        "Conflict" ->
+                            "Такой пользователь уже существует"
+
+                        _ ->
+                            "Внутренняя ошибка" ++ toString err
+
                 _ ->
-                    "Внутренняя ошибка"
+                    "Внутренняя ошибка" ++ toString err
     in
     case authData of
         NotAsked ->
