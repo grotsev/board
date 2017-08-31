@@ -68,37 +68,37 @@ view onLogin state authData =
                 [ Button.disabled True ]
 
         login =
-            Field.group "login" "логин" <|
+            Field.row "login" "логин" <|
                 Field.text
                     (\x -> onLogin { state | login = x } Login authData)
                     state.login
 
         password =
-            Field.group "password" "пароль" <|
+            Field.row "password" "пароль" <|
                 Field.password
                     (\x -> onLogin { state | password = x } Login authData)
                     state.password
 
         passwordAgain =
-            Field.group "passwordAgain" "ещё раз пароль" <|
+            Field.row "passwordAgain" "ещё раз пароль" <|
                 Field.password
                     (\x -> onLogin { state | passwordAgain = x } Login authData)
                     state.passwordAgain
 
         surname =
-            Field.group "surname" "фамилия" <|
+            Field.row "surname" "фамилия" <|
                 Field.text
                     (\x -> onLogin { state | surname = x } Login authData)
                     state.surname
 
         name =
-            Field.group "name" "имя" <|
+            Field.row "name" "имя" <|
                 Field.text
                     (\x -> onLogin { state | name = x } Login authData)
                     state.name
 
         dob =
-            Field.group "dob" "дата рождения" <|
+            Field.row "dob" "дата рождения" <|
                 \id ->
                     DateTimePicker.datePicker
                         (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
@@ -107,21 +107,25 @@ view onLogin state authData =
                         state.dob
 
         loginForm active =
-            Form.form []
-                [ login
-                , password
-                , Button.button (buttonOptions active Login) [ text "войти" ] -- TODO loader spinner
+            Grid.container [ Attr.class "mt-sm-5" ]
+                [ Form.form []
+                    [ login
+                    , password
+                    , Button.button (buttonOptions active Login) [ text "войти" ] -- TODO loader spinner
+                    ]
                 ]
 
         registerForm active =
-            Form.form []
-                [ login
-                , password
-                , passwordAgain
-                , surname
-                , name
-                , dob
-                , Button.button (buttonOptions active Register) [ text "зарегистрироваться" ] -- TODO loader spinner
+            Grid.container [ Attr.class "mt-sm-5" ]
+                [ Form.form []
+                    [ login
+                    , password
+                    , passwordAgain
+                    , surname
+                    , name
+                    , dob
+                    , Button.button (buttonOptions active Register) [ text "зарегистрироваться" ] -- TODO loader spinner
+                    ]
                 ]
 
         content active =

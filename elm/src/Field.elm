@@ -33,17 +33,12 @@ group id title input =
         ]
 
 
-rowInput : String -> String -> (String -> msg) -> String -> Html msg
-rowInput id title toMsg state =
+row : String -> String -> (String -> Html msg) -> Html msg
+row id title input =
     Form.row []
-        [ Form.colLabel [ Col.sm2 ] [ Html.text title ]
-        , Form.col [ Col.sm10 ]
-            [ Input.text
-                [ Input.id id
-                , Input.value state
-                , Input.onInput toMsg
-                ]
-            ]
+        [ Form.colLabel [ Col.sm3 ]
+            [ Form.label [ for id ] [ Html.text title ] ]
+        , Form.col [ Col.sm9 ] [ input id ]
         ]
 
 
