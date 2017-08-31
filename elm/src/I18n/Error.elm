@@ -23,7 +23,7 @@ postgrest { hint, detail, code, message } =
 
 default : a -> String
 default err =
-    Debug.log (toString err) "Внутренняя ошибка "
+    Debug.log (toString err) "Внутренняя ошибка"
 
 
 http : Http.Error -> String

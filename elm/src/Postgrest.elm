@@ -48,6 +48,6 @@ errorDecoder : Decode.Decoder Error
 errorDecoder =
     DP.decode Error
         |> DP.required "hint" (Decode.nullable Decode.string)
-        |> DP.required "detail" (Decode.nullable Decode.string)
+        |> DP.required "details" (Decode.nullable Decode.string)
         |> DP.required "code" (Decode.nullable Decode.string)
         |> DP.required "message" (Decode.nullable Decode.string)
