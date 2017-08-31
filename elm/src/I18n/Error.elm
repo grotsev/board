@@ -14,7 +14,7 @@ postgrest { hint, detail, code, message } =
         Just "23505" ->
             Ok "Уже существует"
 
-        Just "X0001" ->
+        Just "A0001" ->
             Ok "Неверный логин и пароль"
 
         _ ->

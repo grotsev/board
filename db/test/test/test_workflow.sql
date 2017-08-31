@@ -13,7 +13,7 @@ begin
   perform register('pet', 'secret', 'Петров', 'Иван', date '1980-01-31');
   perform register('nic', 'secret', 'Николаева', 'Вера', date '1980-02-01');
 
-  return next is((login('pet', 'secreZ')).staff, null, 'Wrong pasword');
+  return next throws_ok($$select login('pet', 'secreZ')$$, 'A0001', 'Invalid login and password', 'Wrong pasword');
   return next is((login('pet', 'secret')).role, 'staff', 'Right pasword');
 
   perform mock_login('pet', 'secret');
