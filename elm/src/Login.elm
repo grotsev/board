@@ -68,7 +68,9 @@ view onLogin state authData =
                 , Button.onClick <| onLogin state mode Loading
                 ]
             else
-                [ Button.disabled True ]
+                [ Button.attrs [ Attr.class "float-right" ]
+                , Button.disabled True
+                ]
 
         login prefix =
             Field.row (prefix ++ "login") "Логин" <|
