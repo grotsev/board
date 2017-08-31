@@ -63,42 +63,45 @@ view onLogin state authData =
     let
         buttonOptions active mode =
             if active then
-                [ Button.primary, Button.onClick <| onLogin state mode Loading ]
+                [ Button.attrs [ Attr.class "float-right" ]
+                , Button.primary
+                , Button.onClick <| onLogin state mode Loading
+                ]
             else
                 [ Button.disabled True ]
 
-        login =
-            Field.row "login" "логин" <|
+        login prefix =
+            Field.row prefix "login" "логин" <|
                 Field.text
                     (\x -> onLogin { state | login = x } Login authData)
                     state.login
 
-        password =
-            Field.row "password" "пароль" <|
+        password prefix =
+            Field.row prefix "password" "пароль" <|
                 Field.password
                     (\x -> onLogin { state | password = x } Login authData)
                     state.password
 
         passwordAgain =
-            Field.row "passwordAgain" "ещё раз пароль" <|
+            Field.row "" "passwordAgain" "ещё раз пароль" <|
                 Field.password
                     (\x -> onLogin { state | passwordAgain = x } Login authData)
                     state.passwordAgain
 
         surname =
-            Field.row "surname" "фамилия" <|
+            Field.row "" "surname" "фамилия" <|
                 Field.text
                     (\x -> onLogin { state | surname = x } Login authData)
                     state.surname
 
         name =
-            Field.row "name" "имя" <|
+            Field.row "" "name" "имя" <|
                 Field.text
                     (\x -> onLogin { state | name = x } Login authData)
                     state.name
 
         dob =
-            Field.row "dob" "дата рождения" <|
+            Field.row "" "dob" "дата рождения" <|
                 \id ->
                     DateTimePicker.datePicker
                         (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
@@ -109,8 +112,8 @@ view onLogin state authData =
         loginForm active =
             Grid.container [ Attr.class "mt-sm-5" ]
                 [ Form.form []
-                    [ login
-                    , password
+                    [ login "login-"
+                    , password "login-"
                     , Button.button (buttonOptions active Login) [ text "войти" ] -- TODO loader spinner
                     ]
                 ]
@@ -118,8 +121,8 @@ view onLogin state authData =
         registerForm active =
             Grid.container [ Attr.class "mt-sm-5" ]
                 [ Form.form []
-                    [ login
-                    , password
+                    [ login "register-"
+                    , password "register-"
                     , passwordAgain
                     , surname
                     , name

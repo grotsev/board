@@ -25,24 +25,36 @@ password toMsg value id =
         ]
 
 
-group : String -> String -> (String -> Html msg) -> Html msg
-group id title input =
+group : String -> String -> String -> (String -> Html msg) -> Html msg
+group prefix id title input =
+    let
+        pid =
+            prefix ++ id
+    in
     Form.group []
-        [ Form.label [ Attr.for id ] [ Html.text title ]
-        , input id
+        [ Form.label [ Attr.for pid ] [ Html.text title ]
+        , input pid
         ]
 
 
-row : String -> String -> (String -> Html msg) -> Html msg
-row id title input =
+row : String -> String -> String -> (String -> Html msg) -> Html msg
+row prefix id title input =
+    let
+        pid =
+            prefix ++ id
+    in
     Form.row []
         [ Form.colLabel
             [ Col.sm3
             , Col.attrs [ Attr.class "text-right" ]
             ]
-            [ Form.label [ Attr.for id ] [ Html.text title ] ]
-        , Form.col [ Col.sm9 ] [ input id ]
+            [ Form.label [ Attr.for pid ] [ Html.text title ] ]
+        , Form.col [ Col.sm9 ] [ input pid ]
         ]
+
+
+
+-- TODO refactor
 
 
 int : String -> String -> (Maybe Int -> msg) -> String -> Html msg
