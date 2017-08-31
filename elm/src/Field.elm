@@ -4,7 +4,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid.Col as Col
 import Html as Html exposing (Html)
-import Html.Attributes exposing (..)
+import Html.Attributes as Attr
 
 
 text : (String -> msg) -> String -> (String -> Html msg)
@@ -28,7 +28,7 @@ password toMsg value id =
 group : String -> String -> (String -> Html msg) -> Html msg
 group id title input =
     Form.group []
-        [ Form.label [ for id ] [ Html.text title ]
+        [ Form.label [ Attr.for id ] [ Html.text title ]
         , input id
         ]
 
@@ -36,8 +36,11 @@ group id title input =
 row : String -> String -> (String -> Html msg) -> Html msg
 row id title input =
     Form.row []
-        [ Form.colLabel [ Col.sm3 ]
-            [ Form.label [ for id ] [ Html.text title ] ]
+        [ Form.colLabel
+            [ Col.sm3
+            , Col.attrs [ Attr.class "text-right" ]
+            ]
+            [ Form.label [ Attr.for id ] [ Html.text title ] ]
         , Form.col [ Col.sm9 ] [ input id ]
         ]
 
@@ -45,7 +48,7 @@ row id title input =
 int : String -> String -> (Maybe Int -> msg) -> String -> Html msg
 int id title toMsg state =
     Form.group []
-        [ Form.label [ for id ] [ Html.text title ]
+        [ Form.label [ Attr.for id ] [ Html.text title ]
         , Input.text
             [ Input.id id
             , Input.value state
