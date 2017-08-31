@@ -5,6 +5,7 @@ module Login exposing (Auth, Mode(..), State, init, view)
 import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
+import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab
 import Date exposing (Date)
 import DateTimePicker
@@ -14,9 +15,6 @@ import Html.Attributes as Attr
 import I18n.Error as Error
 import RemoteData exposing (RemoteData(..), WebData)
 import Uuid exposing (Uuid)
-
-
--- TODO tab registration
 
 
 type alias State =
@@ -132,32 +130,39 @@ view onLogin state authData =
                 , Button.button (buttonOptions active Register) [ text "зарегистрироваться" ] -- TODO loader spinner
                 ]
 
-        tab active =
-            Tab.config (\x -> onLogin { state | tabState = x } Login authData)
-                |> Tab.items
-                    [ Tab.item
-                        { id = "loginTab"
-                        , link = Tab.link [] [ text "Вход" ]
-                        , pane = Tab.pane [] [ loginForm active ]
-                        }
-                    , Tab.item
-                        { id = "registerTab"
-                        , link = Tab.link [] [ text "Регистрация" ]
-                        , pane = Tab.pane [] [ registerForm active ]
-                        }
+        content active =
+            Grid.container [ Attr.class "mt-sm-5" ]
+                [ Grid.row []
+                    [ Grid.col []
+                        [ Tab.config
+                            (\x -> onLogin { state | tabState = x } Login authData)
+                            |> Tab.items
+                                [ Tab.item
+                                    { id = "loginTab"
+                                    , link = Tab.link [] [ text "Вход" ]
+                                    , pane = Tab.pane [] [ loginForm active ]
+                                    }
+                                , Tab.item
+                                    { id = "registerTab"
+                                    , link = Tab.link [] [ text "Регистрация" ]
+                                    , pane = Tab.pane [] [ registerForm active ]
+                                    }
+                                ]
+                            |> Tab.view state.tabState
+                        ]
                     ]
-                |> Tab.view state.tabState
+                ]
     in
     case authData of
         NotAsked ->
-            tab True
+            content True
 
         Loading ->
-            tab False
+            content False
 
         Failure err ->
             div []
-                [ tab True
+                [ content True
                 , Alert.warning [ text <| Error.http err ]
                 ]
 

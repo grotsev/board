@@ -10,7 +10,6 @@ postgrest { hint, detail, code, message } =
     case code of
         -- unique_violation
         -- TODO extract table from message fk_ and value from detail
-        -- TODO server side
         Just "23505" ->
             Ok "Уже существует"
 

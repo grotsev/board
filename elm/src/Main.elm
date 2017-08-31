@@ -6,7 +6,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Date.Extra.Core as Date
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Login
 import Main.Menu
@@ -136,7 +136,7 @@ view model =
 
 mainContent : Model -> Html Msg
 mainContent model =
-    Grid.container [ class "mt-sm-5" ] <|
+    Grid.containerFluid [ Attr.class "mt-sm-5" ] <|
         case model.route of
             Home ->
                 Route.Home.view
