@@ -71,37 +71,37 @@ view onLogin state authData =
                 [ Button.disabled True ]
 
         login prefix =
-            Field.row prefix "login" "логин" <|
+            Field.row prefix "login" "Логин" <|
                 Field.text
                     (\x -> onLogin { state | login = x } Login authData)
                     state.login
 
         password prefix =
-            Field.row prefix "password" "пароль" <|
+            Field.row prefix "password" "Пароль" <|
                 Field.password
                     (\x -> onLogin { state | password = x } Login authData)
                     state.password
 
         passwordAgain =
-            Field.row "" "passwordAgain" "ещё раз пароль" <|
+            Field.row "" "passwordAgain" "Ещё раз пароль" <|
                 Field.password
                     (\x -> onLogin { state | passwordAgain = x } Login authData)
                     state.passwordAgain
 
         surname =
-            Field.row "" "surname" "фамилия" <|
+            Field.row "" "surname" "Фамилия" <|
                 Field.text
                     (\x -> onLogin { state | surname = x } Login authData)
                     state.surname
 
         name =
-            Field.row "" "name" "имя" <|
+            Field.row "" "name" "Имя" <|
                 Field.text
                     (\x -> onLogin { state | name = x } Login authData)
                     state.name
 
         dob =
-            Field.row "" "dob" "дата рождения" <|
+            Field.row "" "dob" "Дата рождения" <|
                 \id ->
                     DateTimePicker.datePicker
                         (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
@@ -114,7 +114,7 @@ view onLogin state authData =
                 [ Form.form []
                     [ login "login-"
                     , password "login-"
-                    , Button.button (buttonOptions active Login) [ text "войти" ] -- TODO loader spinner
+                    , Button.button (buttonOptions active Login) [ text "Войти" ] -- TODO loader spinner
                     ]
                 ]
 
@@ -127,7 +127,7 @@ view onLogin state authData =
                     , surname
                     , name
                     , dob
-                    , Button.button (buttonOptions active Register) [ text "зарегистрироваться" ] -- TODO loader spinner
+                    , Button.button (buttonOptions active Register) [ text "Зарегистрироваться" ] -- TODO loader spinner
                     ]
                 ]
 

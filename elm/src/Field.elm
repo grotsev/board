@@ -32,7 +32,7 @@ group prefix id title input =
             prefix ++ id
     in
     Form.group []
-        [ Form.label [ Attr.for pid, Attr.class "text-capitalize" ] [ Html.text title ]
+        [ Form.label [ Attr.for pid ] [ Html.text title ]
         , input pid
         ]
 
@@ -46,7 +46,7 @@ row prefix id title input =
     Form.row []
         [ Form.colLabel
             [ Col.sm3
-            , Col.attrs [ Attr.class "text-right", Attr.class "text-capitalize" ]
+            , Col.attrs [ Attr.class "text-right" ]
             ]
             [ Form.label [ Attr.for pid ] [ Html.text title ] ]
         , Form.col [ Col.sm9 ] [ input pid ]
