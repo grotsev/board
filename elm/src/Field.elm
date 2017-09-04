@@ -206,7 +206,7 @@ secure s =
         l =
             String.length s
     in
-    if l < 8 then
+    if l < 6 then
         Validation Danger <| Just "Слишком короткий пароль"
     else if l < 12 then
         Validation Warning <| Just "Лучше пароль ещё длиннее"
