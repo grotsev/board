@@ -1,5 +1,6 @@
 module Field exposing (..)
 
+import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid.Col as Col
@@ -97,6 +98,29 @@ row { id, title, help, error, validation, input } =
                 ++ wrap Form.validationText error
                 ++ wrap Form.help help
         ]
+
+
+form : Bool -> msg -> String -> List (Field msg) -> Html msg
+form active msg doText fields =
+    let
+        buttonOptions =
+            if active && List.all (\r -> r.validation == Success || r.validation == None) fields then
+                [ Button.attrs [ Attr.class "float-right" ]
+                , Button.primary
+                , Button.onClick msg
+                ]
+            else
+                [ Button.attrs [ Attr.class "float-right" ]
+                , Button.disabled True
+                ]
+    in
+    Form.form [] <|
+        List.map row fields
+            ++ [ Button.button buttonOptions [ Html.text doText ] ]
+
+
+
+-- TODO loader spinner
 
 
 wrap : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Maybe String -> List (Html msg)

@@ -46,9 +46,9 @@ type alias Auth =
 
 init : State
 init =
-    -- TODO set to "" or from cookies
-    { login = "pet"
-    , password = "secret"
+    -- TODO set from cookies
+    { login = ""
+    , password = ""
     , passwordAgain = ""
     , surname = ""
     , name = ""
@@ -73,30 +73,28 @@ view onLogin state authData =
                 ]
 
         login prefix =
-            Field.row
-                { id = prefix ++ "login"
-                , title = "Логин"
-                , help = Just "Уникальный идентификатор пользователя"
-                , error = Nothing
-                , validation = Field.None
-                , input =
-                    Field.text
-                        (\x -> onLogin { state | login = x } Login authData)
-                        state.login
-                }
+            { id = prefix ++ "login"
+            , title = "Логин"
+            , help = Just "Уникальный идентификатор пользователя"
+            , error = Nothing
+            , validation = Field.None
+            , input =
+                Field.text
+                    (\x -> onLogin { state | login = x } Login authData)
+                    state.login
+            }
 
         password prefix =
-            Field.row
-                { id = prefix ++ "password"
-                , title = "Пароль"
-                , help = Nothing
-                , error = Nothing
-                , validation = Field.None
-                , input =
-                    Field.password
-                        (\x -> onLogin { state | password = x } Login authData)
-                        state.password
-                }
+            { id = prefix ++ "password"
+            , title = "Пароль"
+            , help = Nothing
+            , error = Nothing
+            , validation = Field.None
+            , input =
+                Field.password
+                    (\x -> onLogin { state | password = x } Login authData)
+                    state.password
+            }
 
         passwordAgain =
             let
@@ -106,80 +104,78 @@ view onLogin state authData =
                     else
                         ( Field.Warning, Just "Пароли не совпадают" )
             in
-            Field.row
-                { id = "passwordAgain"
-                , title = "Ещё раз пароль"
-                , help = Nothing
-                , error = Tuple.second validationAndError
-                , validation = Tuple.first validationAndError
-                , input =
-                    Field.password
-                        (\x -> onLogin { state | passwordAgain = x } Login authData)
-                        state.passwordAgain
-                }
+            { id = "passwordAgain"
+            , title = "Ещё раз пароль"
+            , help = Nothing
+            , error = Tuple.second validationAndError
+            , validation = Tuple.first validationAndError
+            , input =
+                Field.password
+                    (\x -> onLogin { state | passwordAgain = x } Login authData)
+                    state.passwordAgain
+            }
 
         surname =
-            Field.row
-                { id = "surname"
-                , title = "Фамилия"
-                , help = Nothing
-                , error = Nothing
-                , validation = Field.None
-                , input =
-                    Field.text
-                        (\x -> onLogin { state | surname = x } Login authData)
-                        state.surname
-                }
+            { id = "surname"
+            , title = "Фамилия"
+            , help = Nothing
+            , error = Nothing
+            , validation = Field.None
+            , input =
+                Field.text
+                    (\x -> onLogin { state | surname = x } Login authData)
+                    state.surname
+            }
 
         name =
-            Field.row
-                { id = "name"
-                , title = "Имя"
-                , help = Nothing
-                , error = Nothing
-                , validation = Field.None
-                , input =
-                    Field.text
-                        (\x -> onLogin { state | name = x } Login authData)
-                        state.name
-                }
+            { id = "name"
+            , title = "Имя"
+            , help = Nothing
+            , error = Nothing
+            , validation = Field.None
+            , input =
+                Field.text
+                    (\x -> onLogin { state | name = x } Login authData)
+                    state.name
+            }
 
         dob =
-            Field.row
-                { id = "dob"
-                , title = "Дата рождения"
-                , help = Nothing
-                , error = Nothing
-                , validation = Field.None
-                , input =
-                    \id validation ->
-                        -- TODO use validation
-                        DateTimePicker.datePicker
-                            (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
-                            [ Attr.id id ]
-                            state.dobState
-                            state.dob
-                }
+            { id = "dob"
+            , title = "Дата рождения"
+            , help = Nothing
+            , error = Nothing
+            , validation = Field.None
+            , input =
+                \id validation ->
+                    -- TODO use validation
+                    DateTimePicker.datePicker
+                        (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
+                        [ Attr.id id ]
+                        state.dobState
+                        state.dob
+            }
 
         loginForm active =
             Grid.container [ Attr.class "mt-sm-5" ]
-                [ Form.form []
+                [ Field.form active
+                    (onLogin state Login Loading)
+                    "Войти"
                     [ login "login-"
                     , password "login-"
-                    , Button.button (buttonOptions active Login) [ text "Войти" ] -- TODO loader spinner
                     ]
                 ]
 
         registerForm active =
             Grid.container [ Attr.class "mt-sm-5" ]
-                [ Form.form []
+                [ Field.form active
+                    (onLogin state Register Loading)
+                    "Зарегистрироваться"
                     [ login "register-"
                     , password "register-"
                     , passwordAgain
                     , surname
                     , name
                     , dob
-                    , Button.button (buttonOptions active Register) [ text "Зарегистрироваться" ] -- TODO loader spinner
                     ]
                 ]
 
@@ -221,6 +217,6 @@ view onLogin state authData =
 
         Success auth ->
             Button.button
-                [ Button.onClick <| onLogin { state | password = "" } Login NotAsked
+                [ Button.onClick <| onLogin init Login NotAsked
                 ]
                 [ text "Выйти" ]
