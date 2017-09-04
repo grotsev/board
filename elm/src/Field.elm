@@ -3,9 +3,18 @@ module Field exposing (..)
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid.Col as Col
-import Bootstrap.Grid.Row as Row
 import Html as Html exposing (Html)
 import Html.Attributes as Attr
+
+
+type alias Field msg =
+    { id : String
+    , title : String
+    , help : Maybe String
+    , error : Maybe String
+    , validation : Validation
+    , input : String -> Html msg
+    }
 
 
 type Validation
@@ -33,62 +42,49 @@ password toMsg value id =
         ]
 
 
-group : String -> String -> (String -> Html msg) -> Html msg
-group id title input =
-    Form.group []
+group : Field msg -> Html msg
+group { id, title, help, error, validation, input } =
+    let
+        options =
+            case validation of
+                None ->
+                    []
+
+                Success ->
+                    [ Form.groupSuccess ]
+
+                Warning ->
+                    [ Form.groupWarning ]
+
+                Danger ->
+                    [ Form.groupDanger ]
+    in
+    Form.group options <|
         [ Form.label [ Attr.for id ] [ Html.text title ]
         , input id
         ]
+            ++ wrap Form.validationText error
+            ++ wrap Form.help help
 
 
-rowValidation : Validation -> List (Row.Option msg)
-rowValidation validation =
-    case validation of
-        None ->
-            []
+row : Field msg -> Html msg
+row { id, title, help, error, validation, input } =
+    let
+        options =
+            case validation of
+                None ->
+                    []
 
-        Success ->
-            [ Form.rowSuccess ]
+                Success ->
+                    [ Form.rowSuccess ]
 
-        Warning ->
-            [ Form.rowWarning ]
+                Warning ->
+                    [ Form.rowWarning ]
 
-        Danger ->
-            [ Form.rowDanger ]
-
-
-
-{- TODO push request Bootstrap.Form exposing (Option)
-   groupValidation : Validation -> List (Form.Option msg)
-   groupValidation validation =
-       case validation of
-           None ->
-               []
-
-           Success ->
-               [ Form.groupSuccess ]
-
-           Warning ->
-               [ Form.groupWarning ]
-
-           Danger ->
-               [ Form.groupDanger ]
--}
-
-
-wrap : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Maybe String -> List (Html msg)
-wrap f s =
-    case s of
-        Nothing ->
-            []
-
-        Just s ->
-            [ f [] [ Html.text s ] ]
-
-
-row : String -> String -> Maybe String -> Maybe String -> Validation -> (String -> Html msg) -> Html msg
-row id title help error validation input =
-    Form.row (rowValidation validation)
+                Danger ->
+                    [ Form.rowDanger ]
+    in
+    Form.row options
         [ Form.colLabel
             [ Col.sm3
             , Col.attrs [ Attr.class "text-right" ]
@@ -99,6 +95,16 @@ row id title help error validation input =
                 ++ wrap Form.validationText error
                 ++ wrap Form.help help
         ]
+
+
+wrap : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Maybe String -> List (Html msg)
+wrap f s =
+    case s of
+        Nothing ->
+            []
+
+        Just s ->
+            [ f [] [ Html.text s ] ]
 
 
 

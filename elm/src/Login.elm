@@ -73,43 +73,85 @@ view onLogin state authData =
                 ]
 
         login prefix =
-            Field.row (prefix ++ "login") "Логин" (Just "Help") (Just "Nothing") Field.Success <|
-                Field.text
-                    (\x -> onLogin { state | login = x } Login authData)
-                    state.login
+            Field.row
+                { id = prefix ++ "login"
+                , title = "Логин"
+                , help = Just "Уникальный идентификатор пользователя"
+                , error = Nothing
+                , validation = Field.None
+                , input =
+                    Field.text
+                        (\x -> onLogin { state | login = x } Login authData)
+                        state.login
+                }
 
         password prefix =
-            Field.row (prefix ++ "password") "Пароль" Nothing Nothing Field.Success <|
-                Field.password
-                    (\x -> onLogin { state | password = x } Login authData)
-                    state.password
+            Field.row
+                { id = prefix ++ "password"
+                , title = "Пароль"
+                , help = Nothing
+                , error = Nothing
+                , validation = Field.None
+                , input =
+                    Field.password
+                        (\x -> onLogin { state | password = x } Login authData)
+                        state.password
+                }
 
         passwordAgain =
-            Field.row "passwordAgain" "Ещё раз пароль" Nothing Nothing Field.Success <|
-                Field.password
-                    (\x -> onLogin { state | passwordAgain = x } Login authData)
-                    state.passwordAgain
+            Field.row
+                { id = "passwordAgain"
+                , title = "Ещё раз пароль"
+                , help = Nothing
+                , error = Nothing
+                , validation = Field.None
+                , input =
+                    Field.password
+                        (\x -> onLogin { state | passwordAgain = x } Login authData)
+                        state.passwordAgain
+                }
 
         surname =
-            Field.row "surname" "Фамилия" Nothing Nothing Field.Success <|
-                Field.text
-                    (\x -> onLogin { state | surname = x } Login authData)
-                    state.surname
+            Field.row
+                { id = "surname"
+                , title = "Фамилия"
+                , help = Nothing
+                , error = Nothing
+                , validation = Field.None
+                , input =
+                    Field.text
+                        (\x -> onLogin { state | surname = x } Login authData)
+                        state.surname
+                }
 
         name =
-            Field.row "name" "Имя" Nothing Nothing Field.Success <|
-                Field.text
-                    (\x -> onLogin { state | name = x } Login authData)
-                    state.name
+            Field.row
+                { id = "name"
+                , title = "Имя"
+                , help = Nothing
+                , error = Nothing
+                , validation = Field.None
+                , input =
+                    Field.text
+                        (\x -> onLogin { state | name = x } Login authData)
+                        state.name
+                }
 
         dob =
-            Field.row "dob" "Дата рождения" Nothing Nothing Field.Success <|
-                \id ->
-                    DateTimePicker.datePicker
-                        (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
-                        [ Attr.id id ]
-                        state.dobState
-                        state.dob
+            Field.row
+                { id = "dob"
+                , title = "Дата рождения"
+                , help = Nothing
+                , error = Nothing
+                , validation = Field.None
+                , input =
+                    \id ->
+                        DateTimePicker.datePicker
+                            (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
+                            [ Attr.id id ]
+                            state.dobState
+                            state.dob
+                }
 
         loginForm active =
             Grid.container [ Attr.class "mt-sm-5" ]
