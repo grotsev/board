@@ -4,7 +4,6 @@ module Login exposing (Auth, Mode(..), State, init, view)
 
 import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
-import Bootstrap.Form as Form
 import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab
 import Date exposing (Date)
@@ -76,8 +75,7 @@ view onLogin state authData =
             { id = prefix ++ "login"
             , title = "Логин"
             , help = Just "Уникальный идентификатор пользователя"
-            , error = Nothing
-            , validation = Field.None
+            , validation = Field.filled state.login
             , input =
                 Field.text
                     (\x -> onLogin { state | login = x } Login authData)
@@ -88,8 +86,7 @@ view onLogin state authData =
             { id = prefix ++ "password"
             , title = "Пароль"
             , help = Nothing
-            , error = Nothing
-            , validation = Field.None
+            , validation = Field.secure state.password
             , input =
                 Field.password
                     (\x -> onLogin { state | password = x } Login authData)
@@ -98,17 +95,16 @@ view onLogin state authData =
 
         passwordAgain =
             let
-                validationAndError =
+                validation =
                     if state.password == state.passwordAgain then
-                        ( Field.Success, Nothing )
+                        Field.Validation Field.Success Nothing
                     else
-                        ( Field.Warning, Just "Пароли не совпадают" )
+                        Field.Validation Field.Danger <| Just "Пароли должны совпадать"
             in
             { id = "passwordAgain"
             , title = "Ещё раз пароль"
             , help = Nothing
-            , error = Tuple.second validationAndError
-            , validation = Tuple.first validationAndError
+            , validation = validation
             , input =
                 Field.password
                     (\x -> onLogin { state | passwordAgain = x } Login authData)
@@ -119,8 +115,7 @@ view onLogin state authData =
             { id = "surname"
             , title = "Фамилия"
             , help = Nothing
-            , error = Nothing
-            , validation = Field.None
+            , validation = Field.filled state.surname
             , input =
                 Field.text
                     (\x -> onLogin { state | surname = x } Login authData)
@@ -131,8 +126,7 @@ view onLogin state authData =
             { id = "name"
             , title = "Имя"
             , help = Nothing
-            , error = Nothing
-            , validation = Field.None
+            , validation = Field.none
             , input =
                 Field.text
                     (\x -> onLogin { state | name = x } Login authData)
@@ -143,8 +137,7 @@ view onLogin state authData =
             { id = "dob"
             , title = "Дата рождения"
             , help = Nothing
-            , error = Nothing
-            , validation = Field.None
+            , validation = Field.required state.dob
             , input =
                 \id validation ->
                     -- TODO use validation
