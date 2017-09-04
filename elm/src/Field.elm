@@ -13,7 +13,7 @@ type alias Field msg =
     , help : Maybe String
     , error : Maybe String
     , validation : Validation
-    , input : String -> Html msg
+    , input : String -> Validation -> Html msg
     }
 
 
@@ -24,22 +24,24 @@ type Validation
     | Danger
 
 
-text : (String -> msg) -> String -> (String -> Html msg)
-text toMsg value id =
-    Input.text
+text : (String -> msg) -> String -> (String -> Validation -> Html msg)
+text toMsg value id validation =
+    Input.text <|
         [ Input.id id
         , Input.value value
         , Input.onInput toMsg
         ]
+            ++ inputOptions validation
 
 
-password : (String -> msg) -> String -> (String -> Html msg)
-password toMsg value id =
-    Input.password
+password : (String -> msg) -> String -> (String -> Validation -> Html msg)
+password toMsg value id validation =
+    Input.password <|
         [ Input.id id
         , Input.value value
         , Input.onInput toMsg
         ]
+            ++ inputOptions validation
 
 
 group : Field msg -> Html msg
@@ -61,7 +63,7 @@ group { id, title, help, error, validation, input } =
     in
     Form.group options <|
         [ Form.label [ Attr.for id ] [ Html.text title ]
-        , input id
+        , input id validation
         ]
             ++ wrap Form.validationText error
             ++ wrap Form.help help
@@ -91,7 +93,7 @@ row { id, title, help, error, validation, input } =
             ]
             [ Form.label [ Attr.for id ] [ Html.text title ] ]
         , Form.col [ Col.sm9 ] <|
-            [ input id ]
+            [ input id validation ]
                 ++ wrap Form.validationText error
                 ++ wrap Form.help help
         ]
@@ -105,6 +107,22 @@ wrap f s =
 
         Just s ->
             [ f [] [ Html.text s ] ]
+
+
+inputOptions : Validation -> List (Input.Option msg)
+inputOptions validation =
+    case validation of
+        None ->
+            []
+
+        Success ->
+            [ Input.success ]
+
+        Warning ->
+            [ Input.warning ]
+
+        Danger ->
+            [ Input.danger ]
 
 
 

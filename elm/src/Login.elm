@@ -99,12 +99,19 @@ view onLogin state authData =
                 }
 
         passwordAgain =
+            let
+                validationAndError =
+                    if state.password == state.passwordAgain then
+                        ( Field.Success, Nothing )
+                    else
+                        ( Field.Warning, Just "Пароли не совпадают" )
+            in
             Field.row
                 { id = "passwordAgain"
                 , title = "Ещё раз пароль"
                 , help = Nothing
-                , error = Nothing
-                , validation = Field.None
+                , error = Tuple.second validationAndError
+                , validation = Tuple.first validationAndError
                 , input =
                     Field.password
                         (\x -> onLogin { state | passwordAgain = x } Login authData)
@@ -145,7 +152,8 @@ view onLogin state authData =
                 , error = Nothing
                 , validation = Field.None
                 , input =
-                    \id ->
+                    \id validation ->
+                        -- TODO use validation
                         DateTimePicker.datePicker
                             (\s d -> onLogin { state | dobState = s, dob = d } Login authData)
                             [ Attr.id id ]
