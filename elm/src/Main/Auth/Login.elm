@@ -1,13 +1,12 @@
 module Main.Auth.Login exposing (Model, Msg(..), update, view)
 
--- TODO import Date exposing (Date)
-
 import Bootstrap.Grid as Grid
 import Field
 import Html exposing (..)
 import Html.Attributes as Attr
 import RemoteData exposing (RemoteData(..), WebData)
 import Rpc.Login
+import Validate
 
 
 type alias Model a =
@@ -48,7 +47,7 @@ view { login, password, authData } =
             { id = "login-login"
             , title = "Логин"
             , help = Just "Уникальный идентификатор пользователя"
-            , validation = Field.filled login
+            , validation = Validate.filled login
             , input = Field.text LoginMsg login
             }
 
@@ -56,7 +55,7 @@ view { login, password, authData } =
             { id = "login-password"
             , title = "Пароль"
             , help = Nothing
-            , validation = Field.secure password -- TODO error
+            , validation = Validate.secure password -- TODO show RemoteData Err
             , input = Field.password PasswordMsg password
             }
     in

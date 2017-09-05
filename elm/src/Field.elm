@@ -6,6 +6,7 @@ import Bootstrap.Form.Input as Input
 import Bootstrap.Grid.Col as Col
 import Html as Html exposing (Html)
 import Html.Attributes as Attr
+import Validate exposing (Validation)
 
 
 type alias Field msg =
@@ -13,24 +14,11 @@ type alias Field msg =
     , title : String
     , help : Maybe String
     , validation : Validation
-    , input : String -> Status -> Html msg
+    , input : String -> Validate.Status -> Html msg
     }
 
 
-type Status
-    = None
-    | Success
-    | Warning
-    | Danger
-
-
-type alias Validation =
-    { status : Status
-    , error : Maybe String
-    }
-
-
-text : (String -> msg) -> String -> (String -> Status -> Html msg)
+text : (String -> msg) -> String -> (String -> Validate.Status -> Html msg)
 text toMsg value id status =
     Input.text <|
         [ Input.id id
@@ -40,7 +28,7 @@ text toMsg value id status =
             ++ inputOptions status
 
 
-password : (String -> msg) -> String -> (String -> Status -> Html msg)
+password : (String -> msg) -> String -> (String -> Validate.Status -> Html msg)
 password toMsg value id status =
     Input.password <|
         [ Input.id id
@@ -55,16 +43,16 @@ group { id, title, help, validation, input } =
     let
         options =
             case validation.status of
-                None ->
+                Validate.None ->
                     []
 
-                Success ->
+                Validate.Success ->
                     [ Form.groupSuccess ]
 
-                Warning ->
+                Validate.Warning ->
                     [ Form.groupWarning ]
 
-                Danger ->
+                Validate.Danger ->
                     [ Form.groupDanger ]
     in
     Form.group options <|
@@ -80,16 +68,16 @@ row { id, title, help, validation, input } =
     let
         options =
             case validation.status of
-                None ->
+                Validate.None ->
                     []
 
-                Success ->
+                Validate.Success ->
                     [ Form.rowSuccess ]
 
-                Warning ->
+                Validate.Warning ->
                     [ Form.rowWarning ]
 
-                Danger ->
+                Validate.Danger ->
                     [ Form.rowDanger ]
     in
     Form.row options
@@ -109,7 +97,7 @@ form : Bool -> msg -> String -> List (Field msg) -> Html msg
 form active msg doText fields =
     let
         buttonOptions =
-            if active && List.all (\r -> r.validation.status /= Danger) fields then
+            if active && List.all (\r -> r.validation.status /= Validate.Danger) fields then
                 [ Button.attrs [ Attr.class "float-right" ]
                 , Button.primary
                 , Button.onClick msg
@@ -138,19 +126,19 @@ wrap f s =
             [ f [] [ Html.text s ] ]
 
 
-inputOptions : Status -> List (Input.Option msg)
+inputOptions : Validate.Status -> List (Input.Option msg)
 inputOptions status =
     case status of
-        None ->
+        Validate.None ->
             []
 
-        Success ->
+        Validate.Success ->
             [ Input.success ]
 
-        Warning ->
+        Validate.Warning ->
             [ Input.warning ]
 
-        Danger ->
+        Validate.Danger ->
             [ Input.danger ]
 
 
@@ -168,52 +156,3 @@ int id title toMsg state =
             , Input.onInput (String.toInt >> Result.toMaybe >> toMsg)
             ]
         ]
-
-
-required : Maybe a -> Validation
-required maybe =
-    case maybe of
-        Nothing ->
-            Validation Danger <| Just "Обязательное поле"
-
-        Just _ ->
-            Validation Success Nothing
-
-
-length : Int -> String -> Validation
-length base s =
-    let
-        l =
-            String.length s
-    in
-    if l < base then
-        Validation Danger <| Just "Короткая длина"
-    else
-        Validation Success Nothing
-
-
-filled : String -> Validation
-filled s =
-    if String.isEmpty s then
-        Validation Danger <| Just "Обязательное поле"
-    else
-        Validation Success Nothing
-
-
-secure : String -> Validation
-secure s =
-    let
-        l =
-            String.length s
-    in
-    if l < 6 then
-        Validation Danger <| Just "Слишком короткий пароль"
-    else if l < 12 then
-        Validation Warning <| Just "Лучше пароль ещё длиннее"
-    else
-        Validation Success Nothing
-
-
-none : Validation
-none =
-    Validation None Nothing

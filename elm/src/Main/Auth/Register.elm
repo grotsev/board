@@ -8,6 +8,7 @@ import Html exposing (..)
 import Html.Attributes as Attr
 import RemoteData exposing (RemoteData(..), WebData)
 import Rpc.Register
+import Validate
 
 
 type alias Model =
@@ -86,7 +87,7 @@ view { login, password, passwordAgain, surname, name, dobState, dob, authData } 
             { id = "register-login"
             , title = "Логин"
             , help = Just "Уникальный идентификатор пользователя"
-            , validation = Field.filled login
+            , validation = Validate.filled login
             , input = Field.text LoginMsg login
             }
 
@@ -94,7 +95,7 @@ view { login, password, passwordAgain, surname, name, dobState, dob, authData } 
             { id = "register-password"
             , title = "Пароль"
             , help = Nothing
-            , validation = Field.secure password
+            , validation = Validate.secure password
             , input = Field.password PasswordMsg password
             }
 
@@ -102,9 +103,9 @@ view { login, password, passwordAgain, surname, name, dobState, dob, authData } 
             let
                 validation =
                     if password == passwordAgain then
-                        Field.Validation Field.Success Nothing
+                        Validate.Validation Validate.Success Nothing
                     else
-                        Field.Validation Field.Danger <| Just "Пароли должны совпадать"
+                        Validate.Validation Validate.Danger <| Just "Пароли должны совпадать"
             in
             { id = "passwordAgain"
             , title = "Ещё раз пароль"
@@ -117,7 +118,7 @@ view { login, password, passwordAgain, surname, name, dobState, dob, authData } 
             { id = "surname"
             , title = "Фамилия"
             , help = Nothing
-            , validation = Field.filled surname
+            , validation = Validate.filled surname
             , input = Field.text SurnameMsg surname
             }
 
@@ -125,7 +126,7 @@ view { login, password, passwordAgain, surname, name, dobState, dob, authData } 
             { id = "name"
             , title = "Имя"
             , help = Nothing
-            , validation = Field.none
+            , validation = Validate.none
             , input = Field.text NameMsg name
             }
 
@@ -133,7 +134,7 @@ view { login, password, passwordAgain, surname, name, dobState, dob, authData } 
             { id = "dob"
             , title = "Дата рождения"
             , help = Nothing
-            , validation = Field.required dob
+            , validation = Validate.required dob
 
             -- TODO use validation
             , input = \id validation -> DateTimePicker.datePicker DobMsg [ Attr.id id ] dobState dob
