@@ -30,6 +30,14 @@ parseHttpError err =
     let
         log =
             Debug.log (toString err)
+
+        withLazyDefault d e =
+            case e of
+                Err _ ->
+                    log d
+
+                Ok err ->
+                    err
     in
     case err of
         Http.BadPayload _ _ ->
@@ -39,7 +47,7 @@ parseHttpError err =
             body
                 |> Decode.decodeString Postgrest.errorDecoder
                 |> Result.map postgrest
-                |> Result.withDefault (log Decode)
+                |> withLazyDefault Decode
 
         _ ->
             log Undefined
