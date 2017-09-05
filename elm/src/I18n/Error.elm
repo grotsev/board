@@ -1,41 +1,25 @@
 module I18n.Error exposing (..)
 
-import Http
-import Json.Decode as Decode
-import Postgrest
+import Error exposing (Error(..))
 
 
-postgrest : Postgrest.Error -> Result String String
-postgrest { hint, detail, code, message } =
-    case code of
-        -- unique_violation
-        -- TODO extract table from message fk_ and value from detail
-        Just "23505" ->
-            Ok "Уже существует"
+i18n : Error -> String
+i18n error =
+    case error of
+        InvalidFormat ->
+            "Неверный формат ответа"
 
-        Just "A0001" ->
-            Ok "Неверный логин и пароль"
+        Decode ->
+            "Ошибка декодирования"
 
-        _ ->
-            Err "Неизвестная ошибка"
+        YetExists ->
+            "Уже существует"
 
+        InvalidPassword ->
+            "Неверный пароль"
 
-default : a -> String
-default err =
-    Debug.log (toString err) "Внутренняя ошибка"
+        UndefinedPostgrest ->
+            "Неизвестная ошибка Postgrest"
 
-
-http : Http.Error -> String
-http err =
-    case err of
-        Http.BadPayload _ _ ->
-            Debug.log (toString err) "Неверный формат ответа"
-
-        Http.BadStatus { url, status, headers, body } ->
-            body
-                |> Decode.decodeString Postgrest.errorDecoder
-                |> Result.andThen postgrest
-                |> Result.withDefault (default err)
-
-        _ ->
-            default err
+        Undefined ->
+            "Неизвестная ошибка"

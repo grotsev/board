@@ -60,7 +60,7 @@ view { login, password, authData } =
             }
     in
     Grid.container [ Attr.class "mt-sm-5" ]
-        [ Field.form (not <| RemoteData.isLoading authData)
+        [ Field.form authData
             LoginRequestMsg
             "Войти"
             [ loginField

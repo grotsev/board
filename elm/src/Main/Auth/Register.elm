@@ -141,7 +141,7 @@ view { login, password, passwordAgain, surname, name, dobState, dob, authData } 
             }
     in
     Grid.container [ Attr.class "mt-sm-5" ]
-        [ Field.form (not <| RemoteData.isLoading authData)
+        [ Field.form authData
             RegisterRequestMsg
             "Зарегистрироваться"
             [ loginField
