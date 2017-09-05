@@ -4,19 +4,16 @@ import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Date.Extra.Core as Date
 import Html exposing (..)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Login
+import LoginRegister
 import Main.Menu
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Route exposing (Route(..))
 import Route.Home
 import Route.NotFound
-import Rpc.Login
-import Rpc.Register
 
 
 main : Program Never Model Msg
@@ -33,8 +30,7 @@ type alias Model =
     { route : Route
     , navState : Main.Menu.State
     , modalState : Modal.State
-    , loginState : Login.State
-    , authData : WebData Login.Auth
+    , loginRegisterModel : LoginRegister.Model
     }
 
 
@@ -49,8 +45,7 @@ init location =
                 { navState = navState
                 , route = Home
                 , modalState = Modal.hiddenState
-                , loginState = Login.init
-                , authData = RemoteData.NotAsked
+                , loginRegisterModel = LoginRegister.init
                 }
     in
     model ! [ urlCmd, navCmd ]
@@ -60,8 +55,8 @@ type Msg
     = UrlChange Location
     | NavMsg Main.Menu.State
     | ModalMsg Modal.State
-    | LoginMsg Login.State Login.Mode (WebData Login.Auth)
-    | LoginResponse (WebData Login.Auth)
+    | LoginRegisterMsg LoginRegister.Msg
+    | LogOutMsg
 
 
 subscriptions : Model -> Sub Msg
@@ -76,39 +71,20 @@ update msg model =
             urlUpdate location model
 
         NavMsg state ->
-            ( { model | navState = state }
-            , Cmd.none
-            )
+            ( { model | navState = state }, Cmd.none )
 
         ModalMsg state ->
-            ( { model | modalState = state }
-            , Cmd.none
-            )
+            ( { model | modalState = state }, Cmd.none )
 
-        LoginMsg state mode authData ->
-            ( { model | loginState = state, authData = authData }
-            , case authData of
-                RemoteData.Loading ->
-                    let
-                        rpc =
-                            case mode of
-                                Login.Login ->
-                                    Rpc.Login.call
+        LoginRegisterMsg subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    LoginRegister.update subMsg model.loginRegisterModel
+            in
+            ( { model | loginRegisterModel = subModel }, Cmd.map LoginRegisterMsg subCmd )
 
-                                Login.Register ->
-                                    Rpc.Register.call
-                                        << (\r -> { r | dob = Maybe.withDefault (Date.fromTime 0) state.dob })
-                    in
-                    Cmd.map LoginResponse <| rpc state
-
-                _ ->
-                    Cmd.none
-            )
-
-        LoginResponse authData ->
-            ( { model | authData = authData }
-            , Cmd.none
-            )
+        LogOutMsg ->
+            ( { model | loginRegisterModel = LoginRegister.init }, Cmd.none )
 
 
 urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
@@ -118,11 +94,11 @@ urlUpdate location model =
 
 view : Model -> Html Msg
 view model =
-    case model.authData of
+    case model.loginRegisterModel.registerModel.loginData of
         RemoteData.Success auth ->
             let
                 logoutButton =
-                    Login.view LoginMsg model.loginState model.authData
+                    Button.button [ Button.onClick LogOutMsg ] [ text "Выйти" ]
             in
             div []
                 [ Main.Menu.view NavMsg model.navState auth logoutButton
@@ -131,7 +107,7 @@ view model =
                 ]
 
         _ ->
-            Login.view LoginMsg model.loginState model.authData
+            LoginRegister.view model.loginRegisterModel |> Html.map LoginRegisterMsg
 
 
 mainContent : Model -> Html Msg
