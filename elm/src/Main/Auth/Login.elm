@@ -6,13 +6,15 @@ import Html exposing (..)
 import Html.Attributes as Attr
 import RemoteData exposing (RemoteData, WebData)
 import Rpc.Login
-import Validate
+import Rpc.LoginExists
+import Validate exposing (Validation)
 
 
 type alias State a =
     { a
         | login : String
         , password : String
+        , loginExistsData : WebData Bool
     }
 
 
@@ -25,13 +27,14 @@ type Msg
     | PasswordMsg String
     | LoginRequestMsg
     | LoginResponseMsg (WebData Rpc.Login.Out)
+    | LoginExistsResponseMsg (WebData Bool)
 
 
 update : Msg -> State a -> Model -> ( State a, Model, Cmd Msg )
 update msg state model =
     case msg of
         LoginMsg login ->
-            ( { state | login = login }, model, Cmd.none )
+            ( { state | login = login }, model, Rpc.LoginExists.call { login = login } |> Cmd.map LoginExistsResponseMsg )
 
         PasswordMsg password ->
             ( { state | password = password }, model, Cmd.none )
@@ -42,15 +45,30 @@ update msg state model =
         LoginResponseMsg authData ->
             ( state, authData, Cmd.none )
 
+        LoginExistsResponseMsg loginExistsData ->
+            ( { state | loginExistsData = loginExistsData }, model, Cmd.none )
+
 
 view : State a -> Model -> Html Msg
-view { login, password } authData =
+view { login, password, loginExistsData } authData =
     let
+        loginExistsValidation =
+            case loginExistsData of
+                RemoteData.Success True ->
+                    Validate.none
+
+                _ ->
+                    Validation Validate.Danger <| Just "Нет такого логина"
+
         loginField =
             { id = "login-login"
             , title = "Логин"
             , help = Just "Уникальный идентификатор пользователя"
-            , validation = Validate.filled login
+            , validation =
+                Validate.concat
+                    [ Validate.filled login
+                    , loginExistsValidation
+                    ]
             , input = Field.text LoginMsg login
             }
 

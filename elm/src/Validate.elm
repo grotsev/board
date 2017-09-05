@@ -61,3 +61,40 @@ secure s =
 none : Validation
 none =
     Validation None Nothing
+
+
+weight : Status -> Int
+weight status =
+    case status of
+        None ->
+            0
+
+        Success ->
+            1
+
+        Warning ->
+            2
+
+        Danger ->
+            3
+
+
+max : Validation -> Validation -> Validation
+max x y =
+    if weight x.status >= weight y.status then
+        x
+    else
+        y
+
+
+concat : List Validation -> Validation
+concat list =
+    case list of
+        x :: y :: xs ->
+            concat <| max x y :: xs
+
+        x :: [] ->
+            x
+
+        [] ->
+            none

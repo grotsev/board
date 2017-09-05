@@ -19,7 +19,7 @@ type alias Out =
 call : In a -> Cmd (WebData Out)
 call =
     rpc
-        { url = "http://localhost:3001/rpc/login"
+        { url = "http://localhost:3001/rpc/login_exists"
         , encoder =
             \{ login } ->
                 Encode.object

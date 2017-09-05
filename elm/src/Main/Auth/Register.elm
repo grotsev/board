@@ -7,8 +7,9 @@ import Field
 import Html exposing (..)
 import Html.Attributes as Attr
 import RemoteData exposing (RemoteData, WebData)
+import Rpc.LoginExists
 import Rpc.Register
-import Validate
+import Validate exposing (Validation)
 
 
 type alias State =
@@ -19,6 +20,7 @@ type alias State =
     , name : String
     , dobState : DateTimePicker.State
     , dob : Maybe Date
+    , loginExistsData : WebData Bool
     }
 
 
@@ -35,6 +37,7 @@ type Msg
     | DobMsg DateTimePicker.State (Maybe Date)
     | RegisterRequestMsg
     | RegisterResponseMsg (WebData Rpc.Register.Out)
+    | LoginExistsResponseMsg (WebData Bool)
 
 
 init : State
@@ -47,6 +50,7 @@ init =
     , name = ""
     , dobState = DateTimePicker.initialState
     , dob = Just <| Date.fromTime 0 -- TODO Nothing
+    , loginExistsData = RemoteData.NotAsked
     }
 
 
@@ -54,7 +58,7 @@ update : Msg -> State -> Model -> ( State, Model, Cmd Msg )
 update msg state model =
     case msg of
         LoginMsg login ->
-            ( { state | login = login }, model, Cmd.none )
+            ( { state | login = login }, model, Rpc.LoginExists.call { login = login } |> Cmd.map LoginExistsResponseMsg )
 
         PasswordMsg password ->
             ( { state | password = password }, model, Cmd.none )
@@ -82,15 +86,30 @@ update msg state model =
         RegisterResponseMsg authData ->
             ( state, authData, Cmd.none )
 
+        LoginExistsResponseMsg loginExistsData ->
+            ( { state | loginExistsData = loginExistsData }, model, Cmd.none )
+
 
 view : State -> Model -> Html Msg
-view { login, password, passwordAgain, surname, name, dobState, dob } authData =
+view { login, password, passwordAgain, surname, name, dobState, dob, loginExistsData } authData =
     let
+        loginNotExistsValidation =
+            case loginExistsData of
+                RemoteData.Success False ->
+                    Validate.none
+
+                _ ->
+                    Validation Validate.Danger <| Just "Логин уже существует"
+
         loginField =
             { id = "register-login"
             , title = "Логин"
             , help = Just "Уникальный идентификатор пользователя"
-            , validation = Validate.filled login
+            , validation =
+                Validate.concat
+                    [ Validate.filled login
+                    , loginNotExistsValidation
+                    ]
             , input = Field.text LoginMsg login
             }
 
