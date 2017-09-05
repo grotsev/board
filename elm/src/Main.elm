@@ -94,7 +94,7 @@ urlUpdate location model =
 
 view : Model -> Html Msg
 view model =
-    case model.authModel.registerModel.authData of
+    case model.authModel.authModel of
         RemoteData.Success auth ->
             let
                 logoutButton =

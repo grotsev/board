@@ -1,4 +1,4 @@
-module Main.Auth.Register exposing (Model, Msg(..), init, update, view)
+module Main.Auth.Register exposing (Model, Msg, State, init, update, view)
 
 import Bootstrap.Grid as Grid
 import Date exposing (Date)
@@ -6,12 +6,12 @@ import DateTimePicker
 import Field
 import Html exposing (..)
 import Html.Attributes as Attr
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData, WebData)
 import Rpc.Register
 import Validate
 
 
-type alias Model =
+type alias State =
     { login : String
     , password : String
     , passwordAgain : String
@@ -19,8 +19,11 @@ type alias Model =
     , name : String
     , dobState : DateTimePicker.State
     , dob : Maybe Date
-    , authData : WebData Rpc.Register.Out
     }
+
+
+type alias Model =
+    WebData Rpc.Register.Out
 
 
 type Msg
@@ -34,7 +37,7 @@ type Msg
     | RegisterResponseMsg (WebData Rpc.Register.Out)
 
 
-init : Model
+init : State
 init =
     -- TODO set login from cookies
     { login = ""
@@ -44,44 +47,44 @@ init =
     , name = ""
     , dobState = DateTimePicker.initialState
     , dob = Just <| Date.fromTime 0 -- TODO Nothing
-    , authData = NotAsked
     }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> State -> Model -> ( State, Model, Cmd Msg )
+update msg state model =
     case msg of
         LoginMsg login ->
-            ( { model | login = login }, Cmd.none )
+            ( { state | login = login }, model, Cmd.none )
 
         PasswordMsg password ->
-            ( { model | password = password }, Cmd.none )
+            ( { state | password = password }, model, Cmd.none )
 
         PasswordAgainMsg passwordAgain ->
-            ( { model | passwordAgain = passwordAgain }, Cmd.none )
+            ( { state | passwordAgain = passwordAgain }, model, Cmd.none )
 
         SurnameMsg surname ->
-            ( { model | surname = surname }, Cmd.none )
+            ( { state | surname = surname }, model, Cmd.none )
 
         NameMsg name ->
-            ( { model | name = name }, Cmd.none )
+            ( { state | name = name }, model, Cmd.none )
 
         DobMsg dobState dob ->
-            ( { model | dobState = dobState, dob = dob }, Cmd.none )
+            ( { state | dobState = dobState, dob = dob }, model, Cmd.none )
 
         RegisterRequestMsg ->
-            ( { model | authData = Loading }
-            , { model | dob = Maybe.withDefault (Date.fromTime 0) model.dob }
+            ( state
+            , RemoteData.Loading
+            , { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
                 |> Rpc.Register.call
                 |> Cmd.map RegisterResponseMsg
             )
 
         RegisterResponseMsg authData ->
-            ( { model | authData = authData }, Cmd.none )
+            ( state, authData, Cmd.none )
 
 
-view : Model -> Html Msg
-view { login, password, passwordAgain, surname, name, dobState, dob, authData } =
+view : State -> Model -> Html Msg
+view { login, password, passwordAgain, surname, name, dobState, dob } authData =
     let
         loginField =
             { id = "register-login"

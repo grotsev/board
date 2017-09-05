@@ -1,20 +1,23 @@
-module Main.Auth.Login exposing (Model, Msg(..), update, view)
+module Main.Auth.Login exposing (Model, Msg, State, update, view)
 
 import Bootstrap.Grid as Grid
 import Field
 import Html exposing (..)
 import Html.Attributes as Attr
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData, WebData)
 import Rpc.Login
 import Validate
 
 
-type alias Model a =
+type alias State a =
     { a
         | login : String
         , password : String
-        , authData : WebData Rpc.Login.Out
     }
+
+
+type alias Model =
+    WebData Rpc.Login.Out
 
 
 type Msg
@@ -24,24 +27,24 @@ type Msg
     | LoginResponseMsg (WebData Rpc.Login.Out)
 
 
-update : Msg -> Model a -> ( Model a, Cmd Msg )
-update msg model =
+update : Msg -> State a -> Model -> ( State a, Model, Cmd Msg )
+update msg state model =
     case msg of
         LoginMsg login ->
-            ( { model | login = login }, Cmd.none )
+            ( { state | login = login }, model, Cmd.none )
 
         PasswordMsg password ->
-            ( { model | password = password }, Cmd.none )
+            ( { state | password = password }, model, Cmd.none )
 
         LoginRequestMsg ->
-            ( { model | authData = Loading }, Rpc.Login.call model |> Cmd.map LoginResponseMsg )
+            ( state, RemoteData.Loading, Rpc.Login.call state |> Cmd.map LoginResponseMsg )
 
         LoginResponseMsg authData ->
-            ( { model | authData = authData }, Cmd.none )
+            ( state, authData, Cmd.none )
 
 
-view : Model a -> Html Msg
-view { login, password, authData } =
+view : State a -> Model -> Html Msg
+view { login, password } authData =
     let
         loginField =
             { id = "login-login"

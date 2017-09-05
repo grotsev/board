@@ -1,4 +1,4 @@
-module Main.Auth exposing (Model, Msg(..), init, update, view)
+module Main.Auth exposing (Model, Msg, init, update, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab
@@ -6,10 +6,14 @@ import Html exposing (..)
 import Html.Attributes as Attr
 import Main.Auth.Login as Login
 import Main.Auth.Register as Register
+import RemoteData exposing (RemoteData, WebData)
 
 
 type alias Model =
-    { registerModel : Register.Model
+    { authState : Register.State
+    , authModel : Register.Model
+    , loginModel : Login.Model
+    , registerModel : Register.Model
     , tabState : Tab.State
     }
 
@@ -22,7 +26,10 @@ type Msg
 
 init : Model
 init =
-    { registerModel = Register.init
+    { authState = Register.init
+    , authModel = RemoteData.NotAsked
+    , loginModel = RemoteData.NotAsked
+    , registerModel = RemoteData.NotAsked
     , tabState = Tab.initialState
     }
 
@@ -35,21 +42,21 @@ update msg model =
 
         LoginMsg subMsg ->
             let
-                ( subModel, subCmd ) =
-                    Login.update subMsg model.registerModel
+                ( subState, subModel, subCmd ) =
+                    Login.update subMsg model.authState model.loginModel
             in
-            ( { model | registerModel = subModel }, Cmd.map LoginMsg subCmd )
+            ( { model | authState = subState, authModel = subModel, loginModel = subModel }, Cmd.map LoginMsg subCmd )
 
         RegisterMsg subMsg ->
             let
-                ( subModel, subCmd ) =
-                    Register.update subMsg model.registerModel
+                ( subState, subModel, subCmd ) =
+                    Register.update subMsg model.authState model.registerModel
             in
-            ( { model | registerModel = subModel }, Cmd.map RegisterMsg subCmd )
+            ( { model | authState = subState, authModel = subModel, registerModel = subModel }, Cmd.map RegisterMsg subCmd )
 
 
 view : Model -> Html Msg
-view { registerModel, tabState } =
+view { authState, authModel, loginModel, registerModel, tabState } =
     Grid.container [ Attr.class "mt-sm-5" ]
         [ Grid.row []
             [ Grid.col []
@@ -58,12 +65,12 @@ view { registerModel, tabState } =
                         [ Tab.item
                             { id = "loginTab"
                             , link = Tab.link [] [ text "Вход" ]
-                            , pane = Tab.pane [] [ Login.view registerModel |> Html.map LoginMsg ]
+                            , pane = Tab.pane [] [ Login.view authState loginModel |> Html.map LoginMsg ]
                             }
                         , Tab.item
                             { id = "registerTab"
                             , link = Tab.link [] [ text "Регистрация" ]
-                            , pane = Tab.pane [] [ Register.view registerModel |> Html.map RegisterMsg ]
+                            , pane = Tab.pane [] [ Register.view authState registerModel |> Html.map RegisterMsg ]
                             }
                         ]
                     |> Tab.view tabState
