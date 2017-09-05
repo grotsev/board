@@ -1,4 +1,4 @@
-module Login exposing (Model, Msg(..), update, view)
+module Main.Auth.Login exposing (Model, Msg(..), update, view)
 
 -- TODO import Date exposing (Date)
 
@@ -14,7 +14,7 @@ type alias Model a =
     { a
         | login : String
         , password : String
-        , loginData : WebData Rpc.Login.Out
+        , authData : WebData Rpc.Login.Out
     }
 
 
@@ -35,14 +35,14 @@ update msg model =
             ( { model | password = password }, Cmd.none )
 
         LoginRequestMsg ->
-            ( { model | loginData = Loading }, Rpc.Login.call model |> Cmd.map LoginResponseMsg )
+            ( { model | authData = Loading }, Rpc.Login.call model |> Cmd.map LoginResponseMsg )
 
-        LoginResponseMsg loginData ->
-            ( { model | loginData = loginData }, Cmd.none )
+        LoginResponseMsg authData ->
+            ( { model | authData = authData }, Cmd.none )
 
 
 view : Model a -> Html Msg
-view { login, password, loginData } =
+view { login, password, authData } =
     let
         loginField =
             { id = "login-login"
@@ -61,7 +61,7 @@ view { login, password, loginData } =
             }
     in
     Grid.container [ Attr.class "mt-sm-5" ]
-        [ Field.form (not <| RemoteData.isLoading loginData)
+        [ Field.form (not <| RemoteData.isLoading authData)
             LoginRequestMsg
             "Войти"
             [ loginField

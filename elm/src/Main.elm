@@ -7,7 +7,7 @@ import Bootstrap.Modal as Modal
 import Html exposing (..)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import LoginRegister
+import Main.Auth as Auth
 import Main.Menu
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
@@ -30,7 +30,7 @@ type alias Model =
     { route : Route
     , navState : Main.Menu.State
     , modalState : Modal.State
-    , loginRegisterModel : LoginRegister.Model
+    , authModel : Auth.Model
     }
 
 
@@ -45,7 +45,7 @@ init location =
                 { navState = navState
                 , route = Home
                 , modalState = Modal.hiddenState
-                , loginRegisterModel = LoginRegister.init
+                , authModel = Auth.init
                 }
     in
     model ! [ urlCmd, navCmd ]
@@ -55,7 +55,7 @@ type Msg
     = UrlChange Location
     | NavMsg Main.Menu.State
     | ModalMsg Modal.State
-    | LoginRegisterMsg LoginRegister.Msg
+    | LoginRegisterMsg Auth.Msg
     | LogOutMsg
 
 
@@ -79,12 +79,12 @@ update msg model =
         LoginRegisterMsg subMsg ->
             let
                 ( subModel, subCmd ) =
-                    LoginRegister.update subMsg model.loginRegisterModel
+                    Auth.update subMsg model.authModel
             in
-            ( { model | loginRegisterModel = subModel }, Cmd.map LoginRegisterMsg subCmd )
+            ( { model | authModel = subModel }, Cmd.map LoginRegisterMsg subCmd )
 
         LogOutMsg ->
-            ( { model | loginRegisterModel = LoginRegister.init }, Cmd.none )
+            ( { model | authModel = Auth.init }, Cmd.none )
 
 
 urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
@@ -94,7 +94,7 @@ urlUpdate location model =
 
 view : Model -> Html Msg
 view model =
-    case model.loginRegisterModel.registerModel.loginData of
+    case model.authModel.registerModel.authData of
         RemoteData.Success auth ->
             let
                 logoutButton =
@@ -107,7 +107,7 @@ view model =
                 ]
 
         _ ->
-            LoginRegister.view model.loginRegisterModel |> Html.map LoginRegisterMsg
+            Auth.view model.authModel |> Html.map LoginRegisterMsg
 
 
 mainContent : Model -> Html Msg

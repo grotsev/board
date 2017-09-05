@@ -1,4 +1,4 @@
-module Register exposing (Model, Msg(..), init, update, view)
+module Main.Auth.Register exposing (Model, Msg(..), init, update, view)
 
 import Bootstrap.Grid as Grid
 import Date exposing (Date)
@@ -18,7 +18,7 @@ type alias Model =
     , name : String
     , dobState : DateTimePicker.State
     , dob : Maybe Date
-    , loginData : WebData Rpc.Register.Out
+    , authData : WebData Rpc.Register.Out
     }
 
 
@@ -43,7 +43,7 @@ init =
     , name = ""
     , dobState = DateTimePicker.initialState
     , dob = Just <| Date.fromTime 0 -- TODO Nothing
-    , loginData = NotAsked
+    , authData = NotAsked
     }
 
 
@@ -69,18 +69,18 @@ update msg model =
             ( { model | dobState = dobState, dob = dob }, Cmd.none )
 
         RegisterRequestMsg ->
-            ( { model | loginData = Loading }
+            ( { model | authData = Loading }
             , { model | dob = Maybe.withDefault (Date.fromTime 0) model.dob }
                 |> Rpc.Register.call
                 |> Cmd.map RegisterResponseMsg
             )
 
-        RegisterResponseMsg loginData ->
-            ( { model | loginData = loginData }, Cmd.none )
+        RegisterResponseMsg authData ->
+            ( { model | authData = authData }, Cmd.none )
 
 
 view : Model -> Html Msg
-view { login, password, passwordAgain, surname, name, dobState, dob, loginData } =
+view { login, password, passwordAgain, surname, name, dobState, dob, authData } =
     let
         loginField =
             { id = "register-login"
@@ -140,7 +140,7 @@ view { login, password, passwordAgain, surname, name, dobState, dob, loginData }
             }
     in
     Grid.container [ Attr.class "mt-sm-5" ]
-        [ Field.form (not <| RemoteData.isLoading loginData)
+        [ Field.form (not <| RemoteData.isLoading authData)
             RegisterRequestMsg
             "Зарегистрироваться"
             [ loginField

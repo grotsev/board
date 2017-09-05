@@ -1,11 +1,11 @@
-module LoginRegister exposing (Model, Msg(..), init, update, view)
+module Main.Auth exposing (Model, Msg(..), init, update, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab
 import Html exposing (..)
 import Html.Attributes as Attr
-import Login
-import Register
+import Main.Auth.Login as Login
+import Main.Auth.Register as Register
 
 
 type alias Model =
