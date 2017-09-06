@@ -1,25 +1,25 @@
-module Route.Home exposing (..)
+module Route.Home exposing (view)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Route exposing (Route(..))
+import Html exposing (Html)
+import Html.Attributes as Attr
+import Route exposing (Route)
 
 
 view : List (Html msg)
 view =
-    [ h2 [] [ text "Что такое Board" ]
-    , p []
-        [ text "Board упрощает коммуникации по мелким бизнес-процессам внутри компании, для которых почта менее удобна."
+    [ Html.h2 [] [ Html.text "Что такое Board" ]
+    , Html.p []
+        [ Html.text "Board упрощает коммуникации по мелким бизнес-процессам внутри компании, для которых почта менее удобна."
         ]
-    , h2 [] [ text "Какие бизнес-процессы" ]
-    , ul []
-        [ li []
-            [ a [ href <| Route.encode VotingList ] [ text "голосование" ]
-            , ul []
-                [ li [] [ text "подарок ко дню рождения" ]
-                , li [] [ text "общий вопрос" ]
+    , Html.h2 [] [ Html.text "Какие бизнес-процессы" ]
+    , Html.ul []
+        [ Html.li []
+            [ Html.a [ Attr.href <| Route.encode Route.VotingList ] [ Html.text "голосование" ]
+            , Html.ul []
+                [ Html.li [] [ Html.text "подарок ко дню рождения" ]
+                , Html.li [] [ Html.text "общий вопрос" ]
                 ]
             ]
-        , li [] [ text "заказ обеда" ]
+        , Html.li [] [ Html.text "заказ обеда" ]
         ]
     ]

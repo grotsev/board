@@ -1,4 +1,4 @@
-module Encode exposing (..)
+module Encode exposing (date)
 
 import Date exposing (Date)
 import Date.Extra.Config.Config_ru_ru exposing (config)

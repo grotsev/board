@@ -1,4 +1,4 @@
-module Field exposing (..)
+module Field exposing (Field, form, group, password, row, text)
 
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form

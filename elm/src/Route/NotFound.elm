@@ -1,10 +1,10 @@
-module Route.NotFound exposing (..)
+module Route.NotFound exposing (view)
 
-import Html exposing (..)
+import Html exposing (Html)
 
 
 view : List (Html msg)
 view =
-    [ h1 [] [ text "Страница не найдена" ]
-    , text "Страница где-то рядом"
+    [ Html.h1 [] [ Html.text "Страница не найдена" ]
+    , Html.text "Страница где-то рядом"
     ]

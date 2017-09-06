@@ -1,4 +1,4 @@
-module Rpc.Login exposing (..)
+module Rpc.Login exposing (In, Out, call)
 
 import Json.Decode as Decode
 import Json.Decode.Pipeline as DP

@@ -1,4 +1,4 @@
-module Rpc.Register exposing (..)
+module Rpc.Register exposing (In, Out, call)
 
 import Date exposing (Date)
 import Encode as Encode

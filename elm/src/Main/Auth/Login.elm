@@ -2,7 +2,7 @@ module Main.Auth.Login exposing (Model, Msg, State, update, view)
 
 import Bootstrap.Grid as Grid
 import Field
-import Html exposing (..)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import RemoteData exposing (RemoteData, WebData)
 import Rpc.Login
@@ -76,7 +76,7 @@ view { login, password, loginExistsData } authData =
             { id = "login-password"
             , title = "Пароль"
             , help = Nothing
-            , validation = Validate.secure password -- TODO show RemoteData Err
+            , validation = Validate.secure password
             , input = Field.password PasswordMsg password
             }
     in

@@ -1,17 +1,17 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Html exposing (..)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Main.Auth as Auth
 import Main.Menu
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
-import Route exposing (Route(..))
+import Route exposing (Route)
 import Route.Home
 import Route.NotFound
 
@@ -43,7 +43,7 @@ init location =
         ( model, urlCmd ) =
             urlUpdate location
                 { navState = navState
-                , route = Home
+                , route = Route.Home
                 , modalState = Modal.hiddenState
                 , authModel = Auth.init
                 }
@@ -98,9 +98,9 @@ view model =
         RemoteData.Success auth ->
             let
                 logoutButton =
-                    Button.button [ Button.onClick LogOutMsg ] [ text "Выйти" ]
+                    Button.button [ Button.onClick LogOutMsg ] [ Html.text "Выйти" ]
             in
-            div []
+            Html.div []
                 [ Main.Menu.view NavMsg model.navState auth logoutButton
                 , mainContent model
                 , modal model
@@ -114,13 +114,13 @@ mainContent : Model -> Html Msg
 mainContent model =
     Grid.containerFluid [ Attr.class "mt-sm-5" ] <|
         case model.route of
-            Home ->
+            Route.Home ->
                 Route.Home.view
 
-            VotingList ->
+            Route.VotingList ->
                 routeGettingStarted model
 
-            NotFound ->
+            Route.NotFound ->
                 Route.NotFound.view
 
             _ ->
@@ -129,14 +129,14 @@ mainContent model =
 
 routeGettingStarted : Model -> List (Html Msg)
 routeGettingStarted model =
-    [ h2 [] [ text "Getting started" ]
+    [ Html.h2 [] [ Html.text "Getting started" ]
     , Button.button
         [ Button.success
         , Button.large
         , Button.block
         , Button.attrs [ onClick <| ModalMsg Modal.visibleState ]
         ]
-        [ text "Click me" ]
+        [ Html.text "Click me" ]
     ]
 
 
@@ -144,16 +144,16 @@ modal : Model -> Html Msg
 modal model =
     Modal.config ModalMsg
         |> Modal.small
-        |> Modal.h4 [] [ text "Getting started ?" ]
+        |> Modal.h4 [] [ Html.text "Getting started ?" ]
         |> Modal.body []
             [ Grid.containerFluid []
                 [ Grid.row []
                     [ Grid.col
                         [ Col.xs6 ]
-                        [ text "Col 1" ]
+                        [ Html.text "Col 1" ]
                     , Grid.col
                         [ Col.xs6 ]
-                        [ text "Col 2" ]
+                        [ Html.text "Col 2" ]
                     ]
                 ]
             ]

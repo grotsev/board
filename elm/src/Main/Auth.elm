@@ -2,7 +2,7 @@ module Main.Auth exposing (Model, Msg, init, update, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab
-import Html exposing (..)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Main.Auth.Login as Login
 import Main.Auth.Register as Register
@@ -64,12 +64,12 @@ view { authState, authModel, loginModel, registerModel, tabState } =
                     |> Tab.items
                         [ Tab.item
                             { id = "loginTab"
-                            , link = Tab.link [] [ text "Вход" ]
+                            , link = Tab.link [] [ Html.text "Вход" ]
                             , pane = Tab.pane [] [ Login.view authState loginModel |> Html.map LoginMsg ]
                             }
                         , Tab.item
                             { id = "registerTab"
-                            , link = Tab.link [] [ text "Регистрация" ]
+                            , link = Tab.link [] [ Html.text "Регистрация" ]
                             , pane = Tab.pane [] [ Register.view authState registerModel |> Html.map RegisterMsg ]
                             }
                         ]

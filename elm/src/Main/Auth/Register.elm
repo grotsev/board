@@ -4,7 +4,7 @@ import Bootstrap.Grid as Grid
 import Date exposing (Date)
 import DateTimePicker
 import Field
-import Html exposing (..)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import RemoteData exposing (RemoteData, WebData)
 import Rpc.LoginExists

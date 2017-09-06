@@ -1,4 +1,4 @@
-module Postgrest exposing (..)
+module Postgrest exposing (Error, Rpc, errorDecoder, rpc, rpcList)
 
 import Http
 import Json.Decode as Decode
