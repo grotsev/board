@@ -98,7 +98,7 @@ view model =
         RemoteData.Success auth ->
             let
                 logoutButton =
-                    Button.button [ Button.onClick LogOutMsg ] [ Html.text "Выйти" ]
+                    Button.button [ Button.small, Button.onClick LogOutMsg ] [ Html.text "Выйти" ]
             in
             Html.div []
                 [ Main.Menu.view NavMsg model.navState auth logoutButton
