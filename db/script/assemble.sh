@@ -8,10 +8,13 @@ live_model='
   lib/domain/textarea
   lib/domain/textfield
   lib/domain/uuid_pk
-  lib/macro/macro_i18n
   lib/table/i18n
   lib/table/rel
   lib/table/attr
+  lib/table/i18n_rel_title
+  lib/table/i18n_rel_help
+  lib/table/i18n_attr_title
+  lib/table/i18n_attr_help
   live/table/staff
   live/table/voting
   live/table/option
@@ -22,9 +25,16 @@ live_model='
 
 live_data='
   live/data/i18n
-  live/do/i18n
   live/data/rel
   live/data/attr
+  live/data/i18n_rel_title-eng
+  live/data/i18n_rel_title-rus
+  live/data/i18n_rel_help-eng
+  live/data/i18n_rel_help-rus
+  live/data/i18n_attr_title-eng
+  live/data/i18n_attr_title-rus
+  live/data/i18n_attr_help-eng
+  live/data/i18n_attr_help-rus
 '
 
 dev_model='
