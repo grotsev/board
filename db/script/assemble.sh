@@ -8,7 +8,10 @@ live_model='
   lib/domain/textarea
   lib/domain/textfield
   lib/domain/uuid_pk
+  lib/macro/macro_i18n
   lib/table/i18n
+  lib/table/rel
+  lib/table/attr
   live/table/staff
   live/table/voting
   live/table/option
@@ -19,6 +22,9 @@ live_model='
 
 live_data='
   live/data/i18n
+  live/do/i18n
+  live/data/rel
+  live/data/attr
 '
 
 dev_model='
