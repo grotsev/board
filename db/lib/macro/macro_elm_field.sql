@@ -8,8 +8,7 @@ declare
 begin
 
   return format(
-$macro$
-module Field exposing (..)
+$macro$module Field exposing (..)
 
 %1$s
 $macro$
