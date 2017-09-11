@@ -18,6 +18,7 @@ live_model='
 '
 
 live_data='
+  live/data/i18n
 '
 
 dev_model='
