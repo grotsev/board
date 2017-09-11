@@ -1,8 +1,8 @@
 #!/bin/bash
 
 db/script/clean.sh && \
-db/script/install.sh main && \
-db/script/install.sh test && \
+db/script/install.sh live && \
+db/script/install.sh dev && \
 if [[ $# -eq 0 ]]; then
   echo "TAP version 13" && \
   psql postgres://authenticator:changeme@172.17.0.2:5432/postgres --tuples-only -c "select runtests()"

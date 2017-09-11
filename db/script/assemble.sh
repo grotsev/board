@@ -2,29 +2,30 @@
 
 mkdir -p db/build/
 
-main_model='
+live_model='
   lib/extension/pgjwt
   lib/domain/code
   lib/domain/textarea
   lib/domain/textfield
   lib/domain/uuid_pk
-  main/table/staff
-  main/table/voting
-  main/table/option
-  main/table/vote
-  main/type/jwt_token
-  main/function/*
+  lib/table/i18n
+  live/table/staff
+  live/table/voting
+  live/table/option
+  live/table/vote
+  live/type/jwt_token
+  live/function/*
 '
 
-main_data='
+live_data='
 '
 
-test_model='
-  test/function/*
-  test/test/*
+dev_model='
+  dev/function/*
+  dev/test/*
 '
 
-test_data='
+dev_data='
 '
 
 for md in model data
