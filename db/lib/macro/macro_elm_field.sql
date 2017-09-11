@@ -20,14 +20,17 @@ $macro$
 %1$s : Field
 %1$s =
     { id = """%1$s"""
-    , title = """"""
-    , help =
+    , title = """%2$s"""
+    , help = %3$s
     }
 $macro$
           , attr
-          , case when row_number() over ()=count(*) over () then ';' else ',' end
+          , title
+          , case when help is null then 'Nothing' else format('Just """%1$s"""', help) end
           ) as line
-        from attr
+        from i18n_attr_title t
+          left join i18n_attr_help h using (i18n, attr)
+        where t.i18n = macro_elm_field.i18n
         order by attr
       ) l
     )
