@@ -1,7 +1,6 @@
-module Route.Home exposing (view)
+module Page.Home exposing (view)
 
 import Html exposing (Html)
-import Html.Attributes as Attr
 import Route exposing (Route)
 
 
@@ -14,7 +13,7 @@ view =
     , Html.h2 [] [ Html.text "Какие бизнес-процессы" ]
     , Html.ul []
         [ Html.li []
-            [ Html.a [ Attr.href <| Route.encode Route.VotingList ] [ Html.text "голосование" ]
+            [ Html.a [ Route.href Route.VotingList ] [ Html.text "голосование" ]
             , Html.ul []
                 [ Html.li [] [ Html.text "подарок ко дню рождения" ]
                 , Html.li [] [ Html.text "общий вопрос" ]

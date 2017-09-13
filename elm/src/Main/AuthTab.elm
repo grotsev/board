@@ -1,4 +1,4 @@
-module Main.Auth exposing (Model, Msg, init, update, view)
+module Main.AuthTab exposing (Model, Msg, init, update, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab

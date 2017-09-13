@@ -26,9 +26,9 @@ view navMsg navState registerOut logoutButton =
     Navbar.config navMsg
         |> Navbar.withAnimation
         |> Navbar.container
-        |> Navbar.brand [ Attr.href "#" ] [ Html.text "greetgo! Board" ]
+        |> Navbar.brand [ Route.href Route.Home ] [ Html.text "greetgo! Board" ]
         |> Navbar.items
-            [ Navbar.itemLink [ Attr.href <| Route.encode Route.VotingList ] [ Html.text "Голосования" ]
+            [ Navbar.itemLink [ Route.href Route.VotingList ] [ Html.text "Голосования" ]
             ]
         |> Navbar.customItems
             [ Navbar.textItem [ Attr.class "mr-sm-2" ] [ Html.text <| registerOut.surname ]

@@ -2,159 +2,196 @@ module Main exposing (main)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Modal as Modal
+import Bootstrap.Navbar as Navbar
+import Data.Auth as Auth exposing (Auth)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
-import Main.Auth as Auth
-import Main.Menu
+import Json.Decode as Decode exposing (Value)
+import Main.AuthTab as AuthTab
 import Navigation exposing (Location)
-import RemoteData exposing (WebData)
+import Page.Home
+import Page.NotFound
+import Page.Voting
+import Page.VotingList
+import Rocket exposing ((=>))
 import Route exposing (Route)
-import Route.Home
-import Route.NotFound
 
 
-main : Program Never Model Msg
-main =
-    Navigation.program UrlChange
-        { view = view
-        , update = update
-        , subscriptions = subscriptions
-        , init = init
-        }
+type Page
+    = Home
+    | NotFound
+    | VotingList Page.VotingList.Model
+    | Voting Page.Voting.Model
+
+
+
+-- MODEL --
 
 
 type alias Model =
-    { route : Route
-    , navState : Main.Menu.State
-    , modalState : Modal.State
-    , authModel : Auth.Model
+    { navbarState : Navbar.State
+    , page : Page
+    , authResult : Result AuthTab.Model Auth
     }
 
 
-init : Location -> ( Model, Cmd Msg )
-init location =
+init : Value -> Location -> ( Model, Cmd Msg )
+init flags location =
     let
-        ( navState, navCmd ) =
-            Main.Menu.initialState NavMsg
+        ( navbarState, navbarCmd ) =
+            Navbar.initialState NavbarMsg
 
-        ( model, urlCmd ) =
-            urlUpdate location
-                { navState = navState
-                , route = Route.Home
-                , modalState = Modal.hiddenState
-                , authModel = Auth.init
+        ( model, pageCmd ) =
+            setRoute (Route.fromLocation location)
+                { navbarState = navbarState
+                , page = Home
+                , authResult = Err AuthTab.init
                 }
     in
-    model ! [ urlCmd, navCmd ]
+    model ! [ navbarCmd, pageCmd ]
 
 
-type Msg
-    = UrlChange Location
-    | NavMsg Main.Menu.State
-    | ModalMsg Modal.State
-    | LoginRegisterMsg Auth.Msg
-    | LogOutMsg
+
+-- VIEW --
+
+
+view : Model -> Html Msg
+view model =
+    case model.authResult of
+        Ok auth ->
+            Html.div []
+                [ viewNavbar model.navbarState auth
+                , viewPage model.page auth
+                ]
+
+        Err authModel ->
+            AuthTab.view authModel |> Html.map AuthTabMsg
+
+
+viewNavbar : Navbar.State -> Auth -> Html Msg
+viewNavbar navbarState auth =
+    Navbar.config NavbarMsg
+        |> Navbar.withAnimation
+        |> Navbar.container
+        |> Navbar.brand [ Attr.href "#" ] [ Html.text "greetgo! Board" ]
+        |> Navbar.items
+            [ Navbar.itemLink [ Route.href Route.VotingList ] [ Html.text "Голосования" ]
+            ]
+        |> Navbar.customItems
+            [ Navbar.textItem [ Attr.class "mr-sm-2" ] [ Html.text <| auth.surname ]
+            , Navbar.textItem [ Attr.class "mr-sm-3" ] [ Html.text <| auth.name ]
+            , Navbar.formItem []
+                [ Button.button [ Button.small, Button.onClick LogoutMsg ] [ Html.text "Выйти" ]
+                ]
+            ]
+        |> Navbar.view navbarState
+
+
+viewPage : Page -> Auth -> Html Msg
+viewPage page auth =
+    Grid.containerFluid [ Attr.class "mt-sm-5" ] <|
+        case page of
+            Home ->
+                Page.Home.view
+
+            NotFound ->
+                Page.NotFound.view
+
+            VotingList subModel ->
+                Page.VotingList.view subModel
+
+            Voting subModel ->
+                Page.Voting.view subModel
+
+
+
+-- SUBSCRIPTIONS --
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Main.Menu.subscriptions model.navState NavMsg
+    let
+        pageSubscriptions =
+            case model.page of
+                Home ->
+                    Sub.none
+
+                NotFound ->
+                    Sub.none
+
+                VotingList _ ->
+                    Sub.none
+
+                Voting _ ->
+                    Sub.none
+    in
+    Sub.batch
+        [ pageSubscriptions
+        , Navbar.subscriptions model.navbarState NavbarMsg
+        ]
+
+
+
+-- UPDATE --
+
+
+type Msg
+    = SetRoute (Maybe Route)
+    | NavbarMsg Navbar.State
+    | AuthTabMsg AuthTab.Msg
+    | LogoutMsg
+
+
+setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
+setRoute maybeRoute model =
+    case maybeRoute of
+        Nothing ->
+            { model | page = NotFound } => Cmd.none
+
+        Just Route.Home ->
+            { model | page = Home } => Cmd.none
+
+        Just Route.VotingList ->
+            { model | page = VotingList Page.VotingList.init } => Cmd.none
+
+        Just (Route.Voting voting) ->
+            { model | page = Voting Page.Voting.init } => Page.Voting.initCmd
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UrlChange location ->
-            urlUpdate location model
+        SetRoute maybeRoute ->
+            setRoute maybeRoute model
 
-        NavMsg state ->
-            ( { model | navState = state }, Cmd.none )
+        NavbarMsg state ->
+            ( { model | navbarState = state }, Cmd.none )
 
-        ModalMsg state ->
-            ( { model | modalState = state }, Cmd.none )
+        AuthTabMsg subMsg ->
+            case model.authResult of
+                Err authModel ->
+                    let
+                        ( subModel, subCmd ) =
+                            AuthTab.update subMsg authModel
+                    in
+                    ( { model | authResult = Err subModel }, Cmd.map AuthTabMsg subCmd )
 
-        LoginRegisterMsg subMsg ->
-            let
-                ( subModel, subCmd ) =
-                    Auth.update subMsg model.authModel
-            in
-            ( { model | authModel = subModel }, Cmd.map LoginRegisterMsg subCmd )
+                Ok _ ->
+                    ( model, Cmd.none )
 
-        LogOutMsg ->
-            ( { model | authModel = Auth.init }, Cmd.none )
-
-
-urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
-urlUpdate location model =
-    ( { model | route = Route.decode location }, Cmd.none )
+        LogoutMsg ->
+            ( { model | authResult = Err AuthTab.init }, Cmd.none )
 
 
-view : Model -> Html Msg
-view model =
-    case model.authModel.authModel of
-        RemoteData.Success auth ->
-            let
-                logoutButton =
-                    Button.button [ Button.small, Button.onClick LogOutMsg ] [ Html.text "Выйти" ]
-            in
-            Html.div []
-                [ Main.Menu.view NavMsg model.navState auth logoutButton
-                , mainContent model
-                , modal model
-                ]
 
-        _ ->
-            Auth.view model.authModel |> Html.map LoginRegisterMsg
+-- MAIN --
 
 
-mainContent : Model -> Html Msg
-mainContent model =
-    Grid.containerFluid [ Attr.class "mt-sm-5" ] <|
-        case model.route of
-            Route.Home ->
-                Route.Home.view
-
-            Route.VotingList ->
-                routeGettingStarted model
-
-            Route.NotFound ->
-                Route.NotFound.view
-
-            _ ->
-                Debug.crash "TODO"
-
-
-routeGettingStarted : Model -> List (Html Msg)
-routeGettingStarted model =
-    [ Html.h2 [] [ Html.text "Getting started" ]
-    , Button.button
-        [ Button.success
-        , Button.large
-        , Button.block
-        , Button.attrs [ onClick <| ModalMsg Modal.visibleState ]
-        ]
-        [ Html.text "Click me" ]
-    ]
-
-
-modal : Model -> Html Msg
-modal model =
-    Modal.config ModalMsg
-        |> Modal.small
-        |> Modal.h4 [] [ Html.text "Getting started ?" ]
-        |> Modal.body []
-            [ Grid.containerFluid []
-                [ Grid.row []
-                    [ Grid.col
-                        [ Col.xs6 ]
-                        [ Html.text "Col 1" ]
-                    , Grid.col
-                        [ Col.xs6 ]
-                        [ Html.text "Col 2" ]
-                    ]
-                ]
-            ]
-        |> Modal.view model.modalState
+main : Program Value Model Msg
+main =
+    Navigation.programWithFlags (SetRoute << Route.fromLocation)
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }

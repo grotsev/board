@@ -1,50 +1,68 @@
-module Route exposing (Route(..), decode, encode)
+module Route exposing (Route(..), fromLocation, href)
 
+import Html exposing (Attribute)
+import Html.Attributes as Attr
 import Navigation exposing (Location)
 import UrlParser as Url exposing ((</>), s)
 import Uuid exposing (Uuid)
+
+
+-- CORE --
 
 
 type Route
     = Home
     | VotingList
     | Voting Uuid
-    | NotFound
 
 
-decode : Location -> Route
-decode location =
-    Url.parseHash routeParser location
-        |> Maybe.withDefault NotFound
-
-
-routeParser : Url.Parser (Route -> a) a
-routeParser =
+parser : Url.Parser (Route -> a) a
+parser =
     Url.oneOf
-        [ Url.map Home Url.top
-        , Url.map VotingList <| s "voting"
-        , Url.map Voting <| s "voting" </> uuid
+        [ Url.map Home (s "")
+        , Url.map VotingList (s "voting")
+        , Url.map Voting (s "voting" </> uuid)
         ]
 
 
-encode : Route -> String
-encode route =
-    "#"
-        ++ (case route of
+toString : Route -> String
+toString route =
+    let
+        pieces =
+            case route of
                 Home ->
-                    ""
+                    [ "" ]
 
                 VotingList ->
-                    "voting"
+                    [ "voting" ]
 
                 Voting uuid ->
-                    "voting/" ++ Uuid.toString uuid
+                    [ "voting", Uuid.toString uuid ]
+    in
+    "#/" ++ String.join "/" pieces
 
-                NotFound ->
-                    "not-found"
-           )
+
+
+-- INTERNAL HELPERS --
 
 
 uuid : Url.Parser (Uuid -> a) a
 uuid =
     Url.custom "UUID" (Result.fromMaybe "Not UUID" << Uuid.fromString)
+
+
+
+-- PUBLIC HELPERS --
+
+
+href : Route -> Attribute msg
+href route =
+    Attr.href (toString route)
+
+
+fromLocation : Location -> Maybe Route
+fromLocation location =
+    if String.isEmpty location.hash then
+        Just Home
+    else
+        Url.parseHash parser location
