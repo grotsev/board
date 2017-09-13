@@ -139,6 +139,7 @@ type Msg
     = SetRoute (Maybe Route)
     | NavbarMsg Navbar.State
     | AuthTabMsg AuthTab.Msg
+    | AuthMsg Auth
     | LogoutMsg
 
 
@@ -165,7 +166,7 @@ update msg model =
             setRoute maybeRoute model
 
         NavbarMsg state ->
-            ( { model | navbarState = state }, Cmd.none )
+            { model | navbarState = state } => Cmd.none
 
         AuthTabMsg subMsg ->
             case model.authResult of
@@ -174,13 +175,16 @@ update msg model =
                         ( subModel, subCmd ) =
                             AuthTab.update subMsg authModel
                     in
-                    ( { model | authResult = Err subModel }, Cmd.map AuthTabMsg subCmd )
+                    { model | authResult = Err subModel } => Cmd.map AuthTabMsg subCmd
 
                 Ok _ ->
-                    ( model, Cmd.none )
+                    model => Cmd.none
+
+        AuthMsg auth ->
+            { model | authResult = Ok auth } => Cmd.none
 
         LogoutMsg ->
-            ( { model | authResult = Err AuthTab.init }, Cmd.none )
+            { model | authResult = Err AuthTab.init } => Cmd.none
 
 
 
