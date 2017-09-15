@@ -1,25 +1,25 @@
-module I18n.Error exposing (i18n)
+module I18n.Rus exposing (postgrestError)
 
-import Error exposing (Error)
+import Postgrest exposing (Error(..))
 
 
-i18n : Error -> String
-i18n error =
+postgrestError : Error -> String
+postgrestError error =
     case error of
-        Error.InvalidFormat ->
+        InvalidFormat ->
             "Неверный формат ответа"
 
-        Error.Decode ->
+        Decode ->
             "Ошибка декодирования"
 
-        Error.YetExists ->
+        YetExists ->
             "Уже существует"
 
-        Error.InvalidPassword ->
+        InvalidPassword ->
             "Неверный пароль"
 
-        Error.UndefinedPostgrest ->
+        UndefinedPostgrest ->
             "Неизвестная ошибка Postgrest"
 
-        Error.Undefined ->
+        Undefined ->
             "Неизвестная ошибка"

@@ -5,11 +5,10 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
-import Error
 import Html as Html exposing (Html)
 import Html.Attributes as Attr
-import I18n.Error
-import RemoteData exposing (RemoteData, WebData)
+import I18n.Rus as I18n
+import Postgrest
 import Validate exposing (Validation)
 
 
@@ -98,52 +97,37 @@ row { id, title, help, validation, input } =
         ]
 
 
-form : WebData a -> msg -> String -> List (Field msg) -> Html msg
-form data msg doText fields =
+form : Bool -> Postgrest.Data a -> msg -> String -> List (Field msg) -> Html msg
+form loading data msg doText fields =
     let
-        dataReady =
-            not <| RemoteData.isLoading data
-
         allFieldsValid =
             List.all (\r -> r.validation.status /= Validate.Danger) fields
 
         buttonOptions =
-            if dataReady && allFieldsValid then
-                [ Button.primary
-                , Button.onClick msg
-                ]
+            if not loading && allFieldsValid then
+                [ Button.primary, Button.onClick msg ]
             else
-                [ Button.disabled True
-                ]
+                [ Button.disabled True ]
 
-        buttonGroup =
-            [ Button.button buttonOptions [ Html.text doText ] ]
-                ++ (Error.parseData data
-                        |> Maybe.map I18n.Error.i18n
-                        |> wrap Form.validationText
-                   )
-
-        rowOptions =
+        ( buttonRowOptions, errorMessage ) =
             case data of
-                RemoteData.NotAsked ->
-                    []
+                Nothing ->
+                    ( [], [] )
 
-                RemoteData.Loading ->
-                    []
+                Just (Ok _) ->
+                    ( [ Form.rowSuccess ], [] )
 
-                RemoteData.Success _ ->
-                    [ Form.rowSuccess ]
+                Just (Err error) ->
+                    ( [ Form.rowDanger ], [ Html.text <| I18n.postgrestError error ] )
 
-                RemoteData.Failure _ ->
-                    [ Form.rowDanger ]
+        buttonRow =
+            Form.row buttonRowOptions
+                [ Form.colLabel [ Col.sm3 ] []
+                , Form.col [ Col.sm9 ]
+                    [ Button.button buttonOptions <| [ Html.text doText ] ++ errorMessage ]
+                ]
     in
-    Form.form [] <|
-        List.map row fields
-            ++ [ Form.row rowOptions
-                    [ Form.colLabel [ Col.sm3 ] []
-                    , Form.col [ Col.sm9 ] buttonGroup
-                    ]
-               ]
+    Form.form [] <| List.map row fields ++ [ buttonRow ]
 
 
 

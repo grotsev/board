@@ -1,12 +1,12 @@
-module Main.Auth.Login exposing (Model, Msg, State, update, view)
+module Main.Auth.Login exposing (Msg, State, update, view)
 
 import Bootstrap.Grid as Grid
+import Data.Auth exposing (Auth)
 import Field
 import Html exposing (Html)
 import Html.Attributes as Attr
-import RemoteData exposing (RemoteData, WebData)
-import Rpc.Login
-import Rpc.LoginExists
+import Postgrest
+import Rpc
 import Validate exposing (Validation)
 
 
@@ -14,50 +14,67 @@ type alias State a =
     { a
         | login : String
         , password : String
-        , loginExistsData : WebData Bool
+        , loginData : Postgrest.Data Auth
+        , loginLoading : Bool
+        , loginExists : Bool
     }
-
-
-type alias Model =
-    WebData Rpc.Login.Out
 
 
 type Msg
     = LoginMsg String
     | PasswordMsg String
     | LoginRequestMsg
-    | LoginResponseMsg (WebData Rpc.Login.Out)
-    | LoginExistsResponseMsg (WebData Bool)
+    | LoginResponseMsg (Postgrest.Response Auth)
+    | LoginExistsResponseMsg (Postgrest.Response Bool)
 
 
-update : Msg -> State a -> Model -> ( State a, Model, Cmd Msg )
-update msg state model =
+update : Msg -> State a -> ( State a, Maybe Auth, Cmd Msg )
+update msg state =
+    let
+        maybeAuth =
+            state.loginData |> Maybe.andThen Result.toMaybe
+    in
     case msg of
         LoginMsg login ->
-            ( { state | login = login }, model, Rpc.LoginExists.call { login = login } |> Cmd.map LoginExistsResponseMsg )
+            ( { state | login = login, loginExists = False }
+            , maybeAuth
+            , Rpc.loginExists LoginExistsResponseMsg Nothing state
+            )
 
         PasswordMsg password ->
-            ( { state | password = password }, model, Cmd.none )
+            ( { state | password = password }
+            , maybeAuth
+            , Cmd.none
+            )
 
         LoginRequestMsg ->
-            ( state, RemoteData.Loading, Rpc.Login.call state |> Cmd.map LoginResponseMsg )
+            ( { state | loginLoading = True }
+            , maybeAuth
+            , Rpc.login LoginResponseMsg Nothing state
+            )
 
-        LoginResponseMsg authData ->
-            ( state, authData, Cmd.none )
+        LoginResponseMsg response ->
+            ( { state | loginLoading = False, loginData = Just response }
+            , Result.toMaybe response
+            , Cmd.none
+            )
 
-        LoginExistsResponseMsg loginExistsData ->
-            ( { state | loginExistsData = loginExistsData }, model, Cmd.none )
+        LoginExistsResponseMsg response ->
+            ( { state | loginExists = response |> Result.toMaybe |> Maybe.withDefault False }
+            , maybeAuth
+            , Cmd.none
+            )
 
 
-view : State a -> Model -> Html Msg
-view { login, password, loginExistsData } authData =
+view : State a -> Html Msg
+view { login, password, loginData, loginLoading, loginExists } =
     let
         loginExistsValidation =
-            case loginExistsData of
-                RemoteData.Success True ->
+            case loginExists of
+                True ->
                     Validate.none
 
-                _ ->
+                False ->
                     Validation Validate.Danger <| Just "Нет такого логина"
 
         loginField =
@@ -81,7 +98,8 @@ view { login, password, loginExistsData } authData =
             }
     in
     Grid.container [ Attr.class "mt-sm-5" ]
-        [ Field.form authData
+        [ Field.form loginLoading
+            loginData
             LoginRequestMsg
             "Войти"
             [ loginField
