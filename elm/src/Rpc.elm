@@ -5,11 +5,11 @@ import Date exposing (Date)
 import Encode as Encode
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Postgrest exposing (Response)
+import Postgrest
 
 
 login :
-    (Response Auth -> msg)
+    (Postgrest.Result Auth -> msg)
     -> Maybe String
     ->
         { a
@@ -32,7 +32,7 @@ login =
 
 
 loginExists :
-    (Response Bool -> msg)
+    (Postgrest.Result Bool -> msg)
     -> Maybe String
     ->
         { a
@@ -54,7 +54,7 @@ loginExists =
 
 
 register :
-    (Response Auth -> msg)
+    (Postgrest.Result Auth -> msg)
     -> Maybe String
     ->
         { a

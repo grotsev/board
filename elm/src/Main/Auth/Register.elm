@@ -20,9 +20,9 @@ type alias State =
     , name : String
     , dobState : DateTimePicker.State
     , dob : Maybe Date
-    , registerData : Postgrest.Data Auth
+    , registerResponse : Postgrest.Response Auth
     , registerLoading : Bool
-    , loginExistsData : Postgrest.Data Bool
+    , loginExistsResponse : Postgrest.Response Bool
     }
 
 
@@ -33,9 +33,9 @@ type Msg
     | SurnameMsg String
     | NameMsg String
     | DobMsg DateTimePicker.State (Maybe Date)
-    | RegisterRequestMsg
-    | RegisterResponseMsg (Postgrest.Response Auth)
-    | LoginExistsResponseMsg (Postgrest.Response Bool)
+    | RegisterRequest
+    | RegisterResult (Postgrest.Result Auth)
+    | LoginExistsResult (Postgrest.Result Bool)
 
 
 init : State
@@ -47,9 +47,9 @@ init =
     , name = ""
     , dobState = DateTimePicker.initialState
     , dob = Just <| Date.fromTime 0 -- TODO Nothing
-    , registerData = Nothing
+    , registerResponse = Nothing
     , registerLoading = False
-    , loginExistsData = Nothing
+    , loginExistsResponse = Nothing
     }
 
 
@@ -57,13 +57,13 @@ update : Msg -> State -> ( State, Maybe Auth, Cmd Msg )
 update msg state =
     let
         maybeAuth =
-            state.registerData |> Maybe.andThen Result.toMaybe
+            state.registerResponse |> Maybe.andThen Result.toMaybe
     in
     case msg of
         LoginMsg login ->
-            ( { state | login = login, loginExistsData = Nothing }
+            ( { state | login = login, loginExistsResponse = Nothing }
             , maybeAuth
-            , Rpc.loginExists LoginExistsResponseMsg Nothing state
+            , Rpc.loginExists LoginExistsResult Nothing state
             )
 
         PasswordMsg password ->
@@ -96,32 +96,32 @@ update msg state =
             , Cmd.none
             )
 
-        RegisterRequestMsg ->
+        RegisterRequest ->
             ( { state | registerLoading = True }
             , maybeAuth
-            , Rpc.register RegisterResponseMsg
+            , Rpc.register RegisterResult
                 Nothing
                 { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
             )
 
-        RegisterResponseMsg response ->
-            ( { state | registerLoading = False, registerData = Just response, loginExistsData = Nothing }
-            , Result.toMaybe response
+        RegisterResult result ->
+            ( { state | registerLoading = False, registerResponse = Just result, loginExistsResponse = Nothing }
+            , Result.toMaybe result
             , Cmd.none
             )
 
-        LoginExistsResponseMsg response ->
-            ( { state | loginExistsData = Just response }
+        LoginExistsResult result ->
+            ( { state | loginExistsResponse = Just result }
             , maybeAuth
             , Cmd.none
             )
 
 
 view : State -> Html Msg
-view { login, password, passwordAgain, surname, name, dobState, dob, registerData, registerLoading, loginExistsData } =
+view { login, password, passwordAgain, surname, name, dobState, dob, registerResponse, registerLoading, loginExistsResponse } =
     let
         loginNotExistsValidation =
-            case loginExistsData of
+            case loginExistsResponse of
                 Just (Ok False) ->
                     Validate.none
 
@@ -191,8 +191,8 @@ view { login, password, passwordAgain, surname, name, dobState, dob, registerDat
     in
     Grid.container [ Attr.class "mt-sm-5" ]
         [ Field.form registerLoading
-            registerData
-            RegisterRequestMsg
+            registerResponse
+            RegisterRequest
             "Зарегистрироваться"
             [ loginField
             , passwordField

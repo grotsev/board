@@ -1,4 +1,4 @@
-module Postgrest exposing (Data, Error(..), Response, Rpc, send)
+module Postgrest exposing (Error(..), Response, Result, Rpc, send)
 
 import Http
 import Json.Decode exposing (Decoder, decodeString, nullable, string)
@@ -23,19 +23,19 @@ type alias Rpc input output =
     }
 
 
+type alias Result output =
+    Result.Result Error output
+
+
 type alias Response output =
-    Result Error output
-
-
-type alias Data output =
-    Maybe (Response output)
+    Maybe (Result output)
 
 
 
--- INTERNAL ERROR RESPONSE --
+-- INTERNAL ErrorDescription --
 
 
-type alias ErrorResponse =
+type alias ErrorDescription =
     { hint : Maybe String
     , detail : Maybe String
     , code : Maybe String
@@ -43,17 +43,17 @@ type alias ErrorResponse =
     }
 
 
-errorResponseDecoder : Decoder ErrorResponse
-errorResponseDecoder =
-    decode ErrorResponse
+errorDescriptionDecoder : Decoder ErrorDescription
+errorDescriptionDecoder =
+    decode ErrorDescription
         |> required "hint" (nullable string)
         |> required "details" (nullable string)
         |> required "code" (nullable string)
         |> required "message" (nullable string)
 
 
-fromErrorResponse : ErrorResponse -> Error
-fromErrorResponse { hint, detail, code, message } =
+fromErrorDescription : ErrorDescription -> Error
+fromErrorDescription { hint, detail, code, message } =
     case code of
         -- unique_violation
         -- TODO extract table from message fk_ and value from detail
@@ -91,8 +91,8 @@ fromHttpError err =
 
         Http.BadStatus { url, status, headers, body } ->
             body
-                |> decodeString errorResponseDecoder
-                |> Result.map fromErrorResponse
+                |> decodeString errorDescriptionDecoder
+                |> Result.map fromErrorDescription
                 |> withLazyDefault Decode
 
         _ ->
@@ -133,8 +133,8 @@ rpcRequest { url, single, encode, decoder } token input =
 -- PUBLIC --
 
 
-send : Rpc input output -> (Response output -> msg) -> Maybe String -> input -> Cmd msg
-send rpc onResponse token input =
+send : Rpc input output -> (Result output -> msg) -> Maybe String -> input -> Cmd msg
+send rpc onResult token input =
     Http.send
-        (Result.mapError fromHttpError >> onResponse)
+        (Result.mapError fromHttpError >> onResult)
         (rpcRequest rpc token input)

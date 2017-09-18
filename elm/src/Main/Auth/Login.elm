@@ -14,31 +14,31 @@ type alias State a =
     { a
         | login : String
         , password : String
-        , loginData : Postgrest.Data Auth
+        , loginResponse : Postgrest.Response Auth
         , loginLoading : Bool
-        , loginExistsData : Postgrest.Data Bool
+        , loginExistsResponse : Postgrest.Response Bool
     }
 
 
 type Msg
     = LoginMsg String
     | PasswordMsg String
-    | LoginRequestMsg
-    | LoginResponseMsg (Postgrest.Response Auth)
-    | LoginExistsResponseMsg (Postgrest.Response Bool)
+    | LoginRequest
+    | LoginResult (Postgrest.Result Auth)
+    | LoginExistsResult (Postgrest.Result Bool)
 
 
 update : Msg -> State a -> ( State a, Maybe Auth, Cmd Msg )
 update msg state =
     let
         maybeAuth =
-            state.loginData |> Maybe.andThen Result.toMaybe
+            state.loginResponse |> Maybe.andThen Result.toMaybe
     in
     case msg of
         LoginMsg login ->
-            ( { state | login = login, loginExistsData = Nothing }
+            ( { state | login = login, loginExistsResponse = Nothing }
             , maybeAuth
-            , Rpc.loginExists LoginExistsResponseMsg Nothing state
+            , Rpc.loginExists LoginExistsResult Nothing state
             )
 
         PasswordMsg password ->
@@ -47,30 +47,30 @@ update msg state =
             , Cmd.none
             )
 
-        LoginRequestMsg ->
+        LoginRequest ->
             ( { state | loginLoading = True }
             , maybeAuth
-            , Rpc.login LoginResponseMsg Nothing state
+            , Rpc.login LoginResult Nothing state
             )
 
-        LoginResponseMsg response ->
-            ( { state | loginLoading = False, loginData = Just response, loginExistsData = Nothing }
-            , Result.toMaybe response
+        LoginResult result ->
+            ( { state | loginLoading = False, loginResponse = Just result, loginExistsResponse = Nothing }
+            , Result.toMaybe result
             , Cmd.none
             )
 
-        LoginExistsResponseMsg response ->
-            ( { state | loginExistsData = Just response }
+        LoginExistsResult result ->
+            ( { state | loginExistsResponse = Just result }
             , maybeAuth
             , Cmd.none
             )
 
 
 view : State a -> Html Msg
-view { login, password, loginData, loginLoading, loginExistsData } =
+view { login, password, loginResponse, loginLoading, loginExistsResponse } =
     let
         loginExistsValidation =
-            case loginExistsData of
+            case loginExistsResponse of
                 Just (Ok True) ->
                     Validate.none
 
@@ -99,8 +99,8 @@ view { login, password, loginData, loginLoading, loginExistsData } =
     in
     Grid.container [ Attr.class "mt-sm-5" ]
         [ Field.form loginLoading
-            loginData
-            LoginRequestMsg
+            loginResponse
+            LoginRequest
             "Войти"
             [ loginField
             , passwordField

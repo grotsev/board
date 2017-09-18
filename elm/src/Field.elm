@@ -97,8 +97,8 @@ row { id, title, help, validation, input } =
         ]
 
 
-form : Bool -> Postgrest.Data a -> msg -> String -> List (Field msg) -> Html msg
-form loading data msg doText fields =
+form : Bool -> Postgrest.Response a -> msg -> String -> List (Field msg) -> Html msg
+form loading response msg doText fields =
     let
         allFieldsValid =
             List.all (\r -> r.validation.status /= Validate.Danger) fields
@@ -110,7 +110,7 @@ form loading data msg doText fields =
                 [ Button.disabled True ]
 
         ( buttonRowOptions, errorMessage ) =
-            case data of
+            case response of
                 Nothing ->
                     ( [], [] )
 
