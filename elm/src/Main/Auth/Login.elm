@@ -16,7 +16,7 @@ type alias State a =
         , password : String
         , loginData : Postgrest.Data Auth
         , loginLoading : Bool
-        , loginExists : Bool
+        , loginExistsData : Postgrest.Data Bool
     }
 
 
@@ -36,7 +36,7 @@ update msg state =
     in
     case msg of
         LoginMsg login ->
-            ( { state | login = login, loginExists = False }
+            ( { state | login = login, loginExistsData = Nothing }
             , maybeAuth
             , Rpc.loginExists LoginExistsResponseMsg Nothing state
             )
@@ -54,27 +54,27 @@ update msg state =
             )
 
         LoginResponseMsg response ->
-            ( { state | loginLoading = False, loginData = Just response }
+            ( { state | loginLoading = False, loginData = Just response, loginExistsData = Nothing }
             , Result.toMaybe response
             , Cmd.none
             )
 
         LoginExistsResponseMsg response ->
-            ( { state | loginExists = response |> Result.toMaybe |> Maybe.withDefault False }
+            ( { state | loginExistsData = Just response }
             , maybeAuth
             , Cmd.none
             )
 
 
 view : State a -> Html Msg
-view { login, password, loginData, loginLoading, loginExists } =
+view { login, password, loginData, loginLoading, loginExistsData } =
     let
         loginExistsValidation =
-            case loginExists of
-                True ->
+            case loginExistsData of
+                Just (Ok True) ->
                     Validate.none
 
-                False ->
+                _ ->
                     Validation Validate.Danger <| Just "Нет такого логина"
 
         loginField =

@@ -1,14 +1,14 @@
-module Main.Auth.Register exposing (Model, Msg, State, init, update, view)
+module Main.Auth.Register exposing (Msg, State, init, update, view)
 
 import Bootstrap.Grid as Grid
+import Data.Auth exposing (Auth)
 import Date exposing (Date)
 import DateTimePicker
 import Field
 import Html exposing (Html)
 import Html.Attributes as Attr
-import RemoteData exposing (RemoteData, WebData)
-import Rpc.LoginExists
-import Rpc.Register
+import Postgrest
+import Rpc
 import Validate exposing (Validation)
 
 
@@ -20,12 +20,10 @@ type alias State =
     , name : String
     , dobState : DateTimePicker.State
     , dob : Maybe Date
-    , loginExistsData : WebData Bool
+    , registerData : Postgrest.Data Auth
+    , registerLoading : Bool
+    , loginExistsData : Postgrest.Data Bool
     }
-
-
-type alias Model =
-    WebData Rpc.Register.Out
 
 
 type Msg
@@ -36,13 +34,12 @@ type Msg
     | NameMsg String
     | DobMsg DateTimePicker.State (Maybe Date)
     | RegisterRequestMsg
-    | RegisterResponseMsg (WebData Rpc.Register.Out)
-    | LoginExistsResponseMsg (WebData Bool)
+    | RegisterResponseMsg (Postgrest.Response Auth)
+    | LoginExistsResponseMsg (Postgrest.Response Bool)
 
 
 init : State
 init =
-    -- TODO set login from cookies
     { login = ""
     , password = ""
     , passwordAgain = ""
@@ -50,52 +47,82 @@ init =
     , name = ""
     , dobState = DateTimePicker.initialState
     , dob = Just <| Date.fromTime 0 -- TODO Nothing
-    , loginExistsData = RemoteData.NotAsked
+    , registerData = Nothing
+    , registerLoading = False
+    , loginExistsData = Nothing
     }
 
 
-update : Msg -> State -> Model -> ( State, Model, Cmd Msg )
-update msg state model =
+update : Msg -> State -> ( State, Maybe Auth, Cmd Msg )
+update msg state =
+    let
+        maybeAuth =
+            state.registerData |> Maybe.andThen Result.toMaybe
+    in
     case msg of
         LoginMsg login ->
-            ( { state | login = login }, model, Rpc.LoginExists.call { login = login } |> Cmd.map LoginExistsResponseMsg )
-
-        PasswordMsg password ->
-            ( { state | password = password }, model, Cmd.none )
-
-        PasswordAgainMsg passwordAgain ->
-            ( { state | passwordAgain = passwordAgain }, model, Cmd.none )
-
-        SurnameMsg surname ->
-            ( { state | surname = surname }, model, Cmd.none )
-
-        NameMsg name ->
-            ( { state | name = name }, model, Cmd.none )
-
-        DobMsg dobState dob ->
-            ( { state | dobState = dobState, dob = dob }, model, Cmd.none )
-
-        RegisterRequestMsg ->
-            ( state
-            , RemoteData.Loading
-            , { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
-                |> Rpc.Register.call
-                |> Cmd.map RegisterResponseMsg
+            ( { state | login = login, loginExistsData = Nothing }
+            , maybeAuth
+            , Rpc.loginExists LoginExistsResponseMsg Nothing state
             )
 
-        RegisterResponseMsg authData ->
-            ( state, authData, Cmd.none )
+        PasswordMsg password ->
+            ( { state | password = password }
+            , maybeAuth
+            , Cmd.none
+            )
 
-        LoginExistsResponseMsg loginExistsData ->
-            ( { state | loginExistsData = loginExistsData }, model, Cmd.none )
+        PasswordAgainMsg passwordAgain ->
+            ( { state | passwordAgain = passwordAgain }
+            , maybeAuth
+            , Cmd.none
+            )
+
+        SurnameMsg surname ->
+            ( { state | surname = surname }
+            , maybeAuth
+            , Cmd.none
+            )
+
+        NameMsg name ->
+            ( { state | name = name }
+            , maybeAuth
+            , Cmd.none
+            )
+
+        DobMsg dobState dob ->
+            ( { state | dobState = dobState, dob = dob }
+            , maybeAuth
+            , Cmd.none
+            )
+
+        RegisterRequestMsg ->
+            ( { state | registerLoading = True }
+            , maybeAuth
+            , Rpc.register RegisterResponseMsg
+                Nothing
+                { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
+            )
+
+        RegisterResponseMsg response ->
+            ( { state | registerLoading = False, registerData = Just response, loginExistsData = Nothing }
+            , Result.toMaybe response
+            , Cmd.none
+            )
+
+        LoginExistsResponseMsg response ->
+            ( { state | loginExistsData = Just response }
+            , maybeAuth
+            , Cmd.none
+            )
 
 
-view : State -> Model -> Html Msg
-view { login, password, passwordAgain, surname, name, dobState, dob, loginExistsData } authData =
+view : State -> Html Msg
+view { login, password, passwordAgain, surname, name, dobState, dob, registerData, registerLoading, loginExistsData } =
     let
         loginNotExistsValidation =
             case loginExistsData of
-                RemoteData.Success False ->
+                Just (Ok False) ->
                     Validate.none
 
                 _ ->
@@ -163,7 +190,8 @@ view { login, password, passwordAgain, surname, name, dobState, dob, loginExists
             }
     in
     Grid.container [ Attr.class "mt-sm-5" ]
-        [ Field.form authData
+        [ Field.form registerLoading
+            registerData
             RegisterRequestMsg
             "Зарегистрироваться"
             [ loginField
