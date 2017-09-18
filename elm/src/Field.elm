@@ -103,11 +103,14 @@ form loading response msg doText fields =
         allFieldsValid =
             List.all (\r -> r.validation.status /= Validate.Danger) fields
 
+        attrs =
+            Button.attrs <| [ Attr.class "mr-sm-2" ]
+
         buttonOptions =
             if not loading && allFieldsValid then
-                [ Button.primary, Button.onClick msg ]
+                [ attrs, Button.primary, Button.onClick msg ]
             else
-                [ Button.disabled True ]
+                [ attrs, Button.disabled True ]
 
         ( buttonRowOptions, errorMessage ) =
             case response of
@@ -123,8 +126,9 @@ form loading response msg doText fields =
         buttonRow =
             Form.row buttonRowOptions
                 [ Form.colLabel [ Col.sm3 ] []
-                , Form.col [ Col.sm9 ]
-                    [ Button.button buttonOptions <| [ Html.text doText ] ++ errorMessage ]
+                , Form.col [ Col.sm9 ] <|
+                    [ Button.button buttonOptions [ Html.text doText ] ]
+                        ++ errorMessage
                 ]
     in
     Form.form [] <| List.map row fields ++ [ buttonRow ]

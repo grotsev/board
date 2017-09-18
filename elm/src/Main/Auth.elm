@@ -74,7 +74,7 @@ update msg state =
     case msg of
         LoginMsg login ->
             ( { state | login = login, loginExistsResponse = Nothing }
-            , Rpc.loginExists LoginExistsResult Nothing state
+            , Rpc.loginExists LoginExistsResult Nothing { login = login }
             )
 
         PasswordMsg password ->
