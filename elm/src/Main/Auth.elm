@@ -1,4 +1,4 @@
-module Main.Auth exposing (Msg, State, init, update, view)
+module Main.Auth exposing (Msg, State, fromState, init, update, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab
@@ -9,6 +9,7 @@ import Field
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Postgrest
+import Rocket exposing ((=>))
 import Rpc
 import Validate exposing (Validation)
 
@@ -68,77 +69,48 @@ init =
     }
 
 
-update : Msg -> State -> ( State, Maybe Auth, Cmd Msg )
+update : Msg -> State -> ( State, Cmd Msg )
 update msg state =
-    let
-        maybeAuth =
-            state.authResponse |> Maybe.andThen Result.toMaybe
-    in
     case msg of
         LoginMsg login ->
             ( { state | login = login, loginExistsResponse = Nothing }
-            , maybeAuth
             , Rpc.loginExists LoginExistsResult Nothing state
             )
 
         PasswordMsg password ->
-            ( { state | password = password }
-            , maybeAuth
-            , Cmd.none
-            )
+            { state | password = password } => Cmd.none
 
         PasswordAgainMsg passwordAgain ->
-            ( { state | passwordAgain = passwordAgain }
-            , maybeAuth
-            , Cmd.none
-            )
+            { state | passwordAgain = passwordAgain } => Cmd.none
 
         SurnameMsg surname ->
-            ( { state | surname = surname }
-            , maybeAuth
-            , Cmd.none
-            )
+            { state | surname = surname } => Cmd.none
 
         NameMsg name ->
-            ( { state | name = name }
-            , maybeAuth
-            , Cmd.none
-            )
+            { state | name = name } => Cmd.none
 
         DobMsg dobState dob ->
-            ( { state | dobState = dobState, dob = dob }
-            , maybeAuth
-            , Cmd.none
-            )
+            { state | dob = dob, dobState = dobState } => Cmd.none
 
         LoginRequest ->
             ( { state | authLoading = True }
-            , maybeAuth
             , Rpc.login AuthResult Nothing state
             )
 
         RegisterRequest ->
             ( { state | authLoading = True }
-            , maybeAuth
-            , Rpc.register AuthResult
-                Nothing
+            , Rpc.register AuthResult Nothing <|
                 { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
             )
 
         AuthResult result ->
-            ( { state | authLoading = False, authResponse = Just result, loginExistsResponse = Nothing }
-            , Result.toMaybe result
-            , Cmd.none
-            )
+            { state | authLoading = False, authResponse = Just result } => Cmd.none
 
         LoginExistsResult result ->
-            ( { state | loginExistsResponse = Just result }
-            , maybeAuth
-            , Cmd.none
-            )
+            { state | loginExistsResponse = Just result } => Cmd.none
 
         TabMsg tabState ->
-            ( { state | tabState = tabState }, maybeAuth, Cmd.none )
+            { state | tabState = tabState } => Cmd.none
 
 
 view : State -> Html Msg
@@ -286,3 +258,8 @@ viewRegister { login, password, passwordAgain, surname, name, dobState, dob, aut
             , dobField
             ]
         ]
+
+
+fromState : State -> Maybe Auth
+fromState state =
+    state.authResponse |> Maybe.andThen Result.toMaybe

@@ -7,7 +7,7 @@ import Data.Auth as Auth exposing (Auth)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as Decode exposing (Value)
-import Main.AuthTab as AuthTab
+import Main.Auth as Auth
 import Navigation exposing (Location)
 import Page.Home
 import Page.NotFound
@@ -31,7 +31,7 @@ type Page
 type alias Model =
     { navbarState : Navbar.State
     , page : Page
-    , authResult : Result AuthTab.Model Auth
+    , authState : Auth.State
     }
 
 
@@ -45,7 +45,7 @@ init flags location =
             setRoute (Route.fromLocation location)
                 { navbarState = navbarState
                 , page = Home
-                , authResult = Err AuthTab.init
+                , authState = Auth.init
                 }
     in
     model ! [ navbarCmd, pageCmd ]
@@ -57,15 +57,15 @@ init flags location =
 
 view : Model -> Html Msg
 view model =
-    case model.authResult of
-        Ok auth ->
+    case model.authState |> Auth.fromState of
+        Just auth ->
             Html.div []
                 [ viewNavbar model.navbarState auth
                 , viewPage model.page auth
                 ]
 
-        Err authModel ->
-            AuthTab.view authModel |> Html.map AuthTabMsg
+        Nothing ->
+            Auth.view model.authState |> Html.map AuthMsg
 
 
 viewNavbar : Navbar.State -> Auth -> Html Msg
@@ -138,8 +138,7 @@ subscriptions model =
 type Msg
     = SetRoute (Maybe Route)
     | NavbarMsg Navbar.State
-    | AuthTabMsg AuthTab.Msg
-    | AuthMsg Auth
+    | AuthMsg Auth.Msg
     | LogoutMsg
 
 
@@ -168,23 +167,15 @@ update msg model =
         NavbarMsg state ->
             { model | navbarState = state } => Cmd.none
 
-        AuthTabMsg subMsg ->
-            case model.authResult of
-                Err authModel ->
-                    let
-                        ( subModel, subCmd ) =
-                            AuthTab.update subMsg authModel
-                    in
-                    { model | authResult = Err subModel } => Cmd.map AuthTabMsg subCmd
-
-                Ok _ ->
-                    model => Cmd.none
-
-        AuthMsg auth ->
-            { model | authResult = Ok auth } => Cmd.none
+        AuthMsg subMsg ->
+            let
+                ( authState, authCmd ) =
+                    Auth.update subMsg model.authState
+            in
+            { model | authState = authState } => Cmd.map AuthMsg authCmd
 
         LogoutMsg ->
-            { model | authResult = Err AuthTab.init } => Cmd.none
+            { model | authState = Auth.init } => Cmd.none
 
 
 
