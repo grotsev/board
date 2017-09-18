@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Auth
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Navbar as Navbar
@@ -7,7 +8,6 @@ import Data.Auth as Auth exposing (Auth)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as Decode exposing (Value)
-import Main.Auth as Auth
 import Navigation exposing (Location)
 import Page.Home
 import Page.NotFound
