@@ -1,7 +1,6 @@
 module Resource exposing (..)
 
-import PostgRest exposing (resource, string)
-import Postgrest exposing (uuid)
+import Postgrest as Pg exposing (resource, string, uuid)
 import Uuid exposing (Uuid)
 
 
@@ -10,9 +9,9 @@ type Voting
 
 
 voting :
-    PostgRest.Resource Voting
-        { title : PostgRest.Field String
-        , voting : PostgRest.Field Uuid.Uuid
+    Pg.Resource Voting
+        { title : Pg.Field String
+        , voting : Pg.Field Uuid.Uuid
         }
 voting =
     resource Voting "voting" <|

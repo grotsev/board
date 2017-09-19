@@ -3,7 +3,7 @@ module Page.VotingList exposing (..)
 import Bootstrap.Table as Table
 import Html exposing (Html)
 import Http
-import PostgRest as PG
+import Postgrest as Pg
 import Resource
 import Rocket exposing ((=>))
 import Uuid exposing (Uuid)
@@ -22,10 +22,10 @@ type alias State =
 
 votingCmd : Cmd Msg
 votingCmd =
-    PG.query Resource.voting Voting
-        |> PG.select .voting
-        |> PG.select .title
-        |> PG.list PG.noLimit "http://localhost:3001/"
+    Pg.query Resource.voting Voting
+        |> Pg.select .voting
+        |> Pg.select .title
+        |> Pg.list Pg.noLimit "http://localhost:3001/"
         |> Http.send Fetch
 
 
