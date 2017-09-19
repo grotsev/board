@@ -30,6 +30,7 @@ type Page
 
 type alias Model =
     { navbarState : Navbar.State
+    , maybeRoute : Maybe Route
     , page : Page
     , authState : Auth.State
     }
@@ -42,8 +43,9 @@ init flags location =
             Navbar.initialState NavbarMsg
 
         ( model, pageCmd ) =
-            setRoute (Route.fromLocation location)
+            routeToPage
                 { navbarState = navbarState
+                , maybeRoute = Route.fromLocation location
                 , page = Home
                 , authState = Auth.init
                 }
@@ -143,9 +145,9 @@ type Msg
     | VotingListMsg Page.VotingList.Msg
 
 
-setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
-setRoute maybeRoute model =
-    case maybeRoute of
+routeToPage : Model -> ( Model, Cmd Msg )
+routeToPage model =
+    case model.maybeRoute of
         Nothing ->
             { model | page = NotFound } => Cmd.none
 
@@ -167,7 +169,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetRoute maybeRoute ->
-            setRoute maybeRoute model
+            routeToPage { model | maybeRoute = maybeRoute }
 
         NavbarMsg state ->
             { model | navbarState = state } => Cmd.none
@@ -176,8 +178,11 @@ update msg model =
             let
                 ( authState, authCmd ) =
                     Auth.update subMsg model.authState
+
+                ( routeModel, routeCmd ) =
+                    routeToPage { model | authState = authState }
             in
-            { model | authState = authState } => Cmd.map AuthMsg authCmd
+            routeModel ! [ Cmd.map AuthMsg authCmd, routeCmd ]
 
         LogoutMsg ->
             { model | authState = Auth.init } => Cmd.none

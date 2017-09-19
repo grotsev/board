@@ -31,7 +31,16 @@ votingCmd maybeToken =
 
 init : Maybe String -> ( State, Cmd Msg )
 init maybeToken =
-    { votingList = [] } => votingCmd maybeToken
+    let
+        cmd =
+            case maybeToken of
+                Nothing ->
+                    Cmd.none
+
+                Just _ ->
+                    votingCmd maybeToken
+    in
+    { votingList = [] } => cmd
 
 
 view : State -> List (Html msg)
