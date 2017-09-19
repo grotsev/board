@@ -46,6 +46,7 @@ module Postgrest
         , query
         , resource
         , rpc
+        , rpcList
         , select
         , send
         , string
@@ -787,7 +788,6 @@ type Error
 
 type alias Rpc input output =
     { url : String
-    , single : Bool
     , encode : input -> Value
     , decoder : Decode.Decoder output
     }
@@ -870,30 +870,26 @@ fromHttpError err =
 
 
 rpc : Rpc input output -> Maybe String -> input -> Http.Request output
-rpc { url, single, encode, decoder } token input =
-    let
-        accept =
-            case single of
-                False ->
-                    []
-
-                True ->
-                    [ Http.header "Accept" "application/vnd.pgrst.object+json" ]
-
-        authorization =
-            case token of
-                Maybe.Nothing ->
-                    []
-
-                Just token ->
-                    [ Http.header "Authorization" <| "Bearer " ++ token ]
-    in
+rpc { url, encode, decoder } maybeToken input =
     Http.request
         { method = "POST"
-        , headers = accept ++ authorization
+        , headers = singularHeader ++ authorizationHeader maybeToken
         , url = url
         , body = Http.jsonBody (encode input)
         , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+rpcList : Rpc input output -> Maybe String -> input -> Http.Request (List output)
+rpcList { url, encode, decoder } maybeToken input =
+    Http.request
+        { method = "POST"
+        , headers = singularHeader ++ authorizationHeader maybeToken
+        , url = url
+        , body = Http.jsonBody (encode input)
+        , expect = Http.expectJson (Decode.list decoder)
         , timeout = Nothing
         , withCredentials = False
         }

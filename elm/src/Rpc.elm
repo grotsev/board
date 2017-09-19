@@ -20,7 +20,6 @@ login :
 login =
     Postgrest.rpc
         { url = "http://localhost:3001/rpc/login"
-        , single = True
         , encode =
             \{ login, password } ->
                 Encode.object
@@ -41,7 +40,6 @@ loginExists :
 loginExists =
     Postgrest.rpc
         { url = "http://localhost:3001/rpc/login_exists"
-        , single = True
         , encode =
             \{ login } ->
                 Encode.object
@@ -66,7 +64,6 @@ register :
 register =
     Postgrest.rpc
         { url = "http://localhost:3001/rpc/register"
-        , single = True
         , encode =
             \{ login, password, surname, name, dob } ->
                 Encode.object
