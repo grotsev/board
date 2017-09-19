@@ -1,9 +1,11 @@
-module Postgrest exposing (Error(..), Response, Result, Rpc, send)
+module Postgrest exposing (Error(..), Response, Result, Rpc, rpc, send, uuid)
 
 import Http
 import Json.Decode exposing (Decoder, decodeString, nullable, string)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode exposing (Value)
+import PostgRest exposing (Field)
+import Uuid exposing (Uuid)
 
 
 type Error
@@ -32,7 +34,7 @@ type alias Response output =
 
 
 
--- INTERNAL ErrorDescription --
+-- INTERNAL --
 
 
 type alias ErrorDescription =
@@ -67,10 +69,6 @@ fromErrorDescription { hint, detail, code, message } =
             UndefinedPostgrest
 
 
-
--- INTERNAL --
-
-
 fromHttpError : Http.Error -> Error
 fromHttpError err =
     let
@@ -99,8 +97,12 @@ fromHttpError err =
             log Undefined
 
 
-rpcRequest : Rpc input output -> Maybe String -> input -> Http.Request output
-rpcRequest { url, single, encode, decoder } token input =
+
+-- PUBLIC --
+
+
+rpc : Rpc input output -> Maybe String -> input -> Http.Request output
+rpc { url, single, encode, decoder } token input =
     let
         accept =
             case single of
@@ -129,12 +131,11 @@ rpcRequest { url, single, encode, decoder } token input =
         }
 
 
+send : (Result output -> msg) -> Http.Request output -> Cmd msg
+send onResult =
+    Http.send (Result.mapError fromHttpError >> onResult)
 
--- PUBLIC --
 
-
-send : Rpc input output -> (Result output -> msg) -> Maybe String -> input -> Cmd msg
-send rpc onResult token input =
-    Http.send
-        (Result.mapError fromHttpError >> onResult)
-        (rpcRequest rpc token input)
+uuid : String -> Field Uuid
+uuid =
+    PostgRest.field Uuid.decoder Uuid.toString

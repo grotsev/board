@@ -3,22 +3,22 @@ module Rpc exposing (..)
 import Data.Auth as Auth exposing (Auth)
 import Date exposing (Date)
 import Encode as Encode
+import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Postgrest
 
 
 login :
-    (Postgrest.Result Auth -> msg)
-    -> Maybe String
+    Maybe String
     ->
         { a
             | login : String
             , password : String
         }
-    -> Cmd msg
+    -> Http.Request Auth
 login =
-    Postgrest.send
+    Postgrest.rpc
         { url = "http://localhost:3001/rpc/login"
         , single = True
         , encode =
@@ -32,15 +32,14 @@ login =
 
 
 loginExists :
-    (Postgrest.Result Bool -> msg)
-    -> Maybe String
+    Maybe String
     ->
         { a
             | login : String
         }
-    -> Cmd msg
+    -> Http.Request Bool
 loginExists =
-    Postgrest.send
+    Postgrest.rpc
         { url = "http://localhost:3001/rpc/login_exists"
         , single = True
         , encode =
@@ -54,8 +53,7 @@ loginExists =
 
 
 register :
-    (Postgrest.Result Auth -> msg)
-    -> Maybe String
+    Maybe String
     ->
         { a
             | login : String
@@ -64,9 +62,9 @@ register :
             , name : String
             , dob : Date
         }
-    -> Cmd msg
+    -> Http.Request Auth
 register =
-    Postgrest.send
+    Postgrest.rpc
         { url = "http://localhost:3001/rpc/register"
         , single = True
         , encode =

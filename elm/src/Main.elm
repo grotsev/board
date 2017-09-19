@@ -20,7 +20,7 @@ import Route exposing (Route)
 type Page
     = Home
     | NotFound
-    | VotingList Page.VotingList.Model
+    | VotingList Page.VotingList.State
     | Voting Page.Voting.Model
 
 
@@ -140,6 +140,7 @@ type Msg
     | NavbarMsg Navbar.State
     | AuthMsg Auth.Msg
     | LogoutMsg
+    | VotingListMsg Page.VotingList.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -152,7 +153,11 @@ setRoute maybeRoute model =
             { model | page = Home } => Cmd.none
 
         Just Route.VotingList ->
-            { model | page = VotingList Page.VotingList.init } => Cmd.none
+            let
+                ( votingListModel, votingListCmd ) =
+                    Page.VotingList.init
+            in
+            { model | page = VotingList votingListModel } => Cmd.map VotingListMsg votingListCmd
 
         Just (Route.Voting voting) ->
             { model | page = Voting Page.Voting.init } => Page.Voting.initCmd
@@ -176,6 +181,18 @@ update msg model =
 
         LogoutMsg ->
             { model | authState = Auth.init } => Cmd.none
+
+        VotingListMsg subMsg ->
+            case model.page of
+                VotingList subState ->
+                    let
+                        ( newSubState, subCmd ) =
+                            Page.VotingList.update subMsg subState
+                    in
+                    { model | page = VotingList newSubState } => Cmd.map VotingListMsg subCmd
+
+                _ ->
+                    model => Cmd.none
 
 
 

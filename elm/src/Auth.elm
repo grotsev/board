@@ -74,7 +74,7 @@ update msg state =
     case msg of
         LoginMsg login ->
             ( { state | login = login, loginExistsResponse = Nothing }
-            , Rpc.loginExists LoginExistsResult Nothing { login = login }
+            , Postgrest.send LoginExistsResult <| Rpc.loginExists Nothing { login = login }
             )
 
         PasswordMsg password ->
@@ -94,13 +94,13 @@ update msg state =
 
         LoginRequest ->
             ( { state | authLoading = True }
-            , Rpc.login AuthResult Nothing state
+            , Postgrest.send AuthResult <| Rpc.login Nothing state
             )
 
         RegisterRequest ->
             ( { state | authLoading = True }
-            , Rpc.register AuthResult Nothing <|
-                { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
+            , Postgrest.send AuthResult <|
+                Rpc.register Nothing { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
             )
 
         AuthResult result ->
