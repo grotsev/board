@@ -427,6 +427,7 @@ desc getField schema =
 
 
 
+-- REQUEST --
 -- naming for these functions is based off of:
 -- http://www.django-rest-framework.org/api-guide/generic-views/#retrieveupdateapiview
 
@@ -435,20 +436,10 @@ desc getField schema =
 -}
 list : Limit -> String -> Query uniq schema a -> Http.Request (List a)
 list limit url (Query _ (Parameters params) decoder) =
-    let
-        settings =
-            { count = False
-            , singular = False
-            , offset = Nothing
-            }
-
-        ( headers, queryUrl ) =
-            getHeadersAndQueryUrl settings url params.name (Parameters { params | limit = limit })
-    in
     Http.request
         { method = "GET"
-        , headers = headers
-        , url = queryUrl
+        , headers = []
+        , url = getQueryUrl Nothing url params.name (Parameters { params | limit = limit })
         , body = Http.emptyBody
         , expect = Http.expectJson (Decode.list decoder)
         , timeout = Nothing
@@ -460,20 +451,10 @@ list limit url (Query _ (Parameters params) decoder) =
 -}
 first : String -> Query uniq schema a -> Http.Request (Maybe a)
 first url (Query _ (Parameters params) decoder) =
-    let
-        settings =
-            { count = False
-            , singular = True
-            , offset = Nothing
-            }
-
-        ( headers, queryUrl ) =
-            getHeadersAndQueryUrl settings url params.name (Parameters params)
-    in
     Http.request
         { method = "GET"
-        , headers = headers
-        , url = queryUrl
+        , headers = [ singularHeader ]
+        , url = getQueryUrl Nothing url params.name (Parameters params)
         , body = Http.emptyBody
         , expect = Http.expectJson (Decode.nullable decoder)
         , timeout = Nothing
@@ -485,16 +466,6 @@ first url (Query _ (Parameters params) decoder) =
 paginate : { pageNumber : Int, pageSize : Int } -> String -> Query uniq schema a -> Http.Request (Page a)
 paginate { pageNumber, pageSize } url (Query _ (Parameters params) decoder) =
     let
-        settings =
-            -- NOTE: pageNumber is NOT 0 indexed. the first page is 1.
-            { count = True
-            , singular = False
-            , offset = Just ((pageNumber - 1) * pageSize)
-            }
-
-        ( headers, queryUrl ) =
-            getHeadersAndQueryUrl settings url params.name (Parameters { params | limit = LimitTo pageSize })
-
         handleResponse response =
             let
                 countResult =
@@ -510,8 +481,13 @@ paginate { pageNumber, pageSize } url (Query _ (Parameters params) decoder) =
     in
     Http.request
         { method = "GET"
-        , headers = headers
-        , url = queryUrl
+        , headers = [ countExactHeader ]
+        , url =
+            getQueryUrl
+                (Just <| (pageNumber - 1) * pageSize)
+                url
+                params.name
+                (Parameters { params | limit = LimitTo pageSize })
         , body = Http.emptyBody
         , expect = Http.expectStringResponse handleResponse
         , timeout = Nothing
@@ -519,20 +495,9 @@ paginate { pageNumber, pageSize } url (Query _ (Parameters params) decoder) =
         }
 
 
-type alias Settings =
-    { count : Bool
-    , singular : Bool
-    , offset : Maybe Int
-    }
-
-
-{-| -}
-getHeadersAndQueryUrl : Settings -> String -> String -> Parameters -> ( List Http.Header, String )
-getHeadersAndQueryUrl settings url name p =
+getQueryUrl : Maybe Int -> String -> String -> Parameters -> String
+getQueryUrl offset url name p =
     let
-        { count, singular, offset } =
-            settings
-
         trailingSlashUrl =
             if String.right 1 url == "/" then
                 url
@@ -541,35 +506,25 @@ getHeadersAndQueryUrl settings url name p =
 
         ( labeledOrders, labeledFilters, labeledLimits ) =
             labelParams p
-
-        queryUrl =
-            [ selectsToKeyValue p
-            , labeledFiltersToKeyValues labeledFilters
-            , labeledOrdersToKeyValue labeledOrders
-            , labeledLimitsToKeyValue labeledLimits
-            , offsetToKeyValue offset
-            ]
-                |> List.foldl (++) []
-                |> queryParamsToUrl (trailingSlashUrl ++ name)
-
-        pluralityHeader =
-            if singular then
-                [ ( "Prefer", "plurality=singular" ) ]
-            else
-                []
-
-        countHeader =
-            if count then
-                -- https://github.com/begriffs/postgrest/pull/700
-                [ ( "Prefer", "count=exact" ) ]
-            else
-                []
-
-        headers =
-            (pluralityHeader ++ countHeader)
-                |> List.map (\( a, b ) -> Http.header a b)
     in
-    ( headers, queryUrl )
+    [ selectsToKeyValue p
+    , labeledFiltersToKeyValues labeledFilters
+    , labeledOrdersToKeyValue labeledOrders
+    , labeledLimitsToKeyValue labeledLimits
+    , offsetToKeyValue offset
+    ]
+        |> List.foldl (++) []
+        |> queryParamsToUrl (trailingSlashUrl ++ name)
+
+
+singularHeader : Http.Header
+singularHeader =
+    Http.header "Accept" "application/vnd.pgrst.object+json"
+
+
+countExactHeader : Http.Header
+countExactHeader =
+    Http.header "Prefer" "count=exact"
 
 
 selectsToKeyValueHelper : Parameters -> String
