@@ -20,18 +20,18 @@ type alias State =
     }
 
 
-votingCmd : Cmd Msg
-votingCmd =
+votingCmd : Maybe String -> Cmd Msg
+votingCmd maybeToken =
     Pg.query Resource.voting Voting
         |> Pg.select .voting
         |> Pg.select .title
-        |> Pg.list Pg.noLimit "http://localhost:3001/"
+        |> Pg.list Pg.noLimit "http://localhost:3001/" maybeToken
         |> Http.send Fetch
 
 
-init : ( State, Cmd Msg )
-init =
-    { votingList = [] } => votingCmd
+init : Maybe String -> ( State, Cmd Msg )
+init maybeToken =
+    { votingList = [] } => votingCmd maybeToken
 
 
 view : State -> List (Html msg)

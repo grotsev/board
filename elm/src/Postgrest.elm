@@ -450,11 +450,11 @@ desc getField schema =
 
 {-| Takes `limit`, `url` and a `query`, returns an Http.Request
 -}
-list : Limit -> String -> Query uniq schema a -> Http.Request (List a)
-list limit url (Query _ (Parameters params) decoder) =
+list : Limit -> String -> Maybe String -> Query uniq schema a -> Http.Request (List a)
+list limit url maybeToken (Query _ (Parameters params) decoder) =
     Http.request
         { method = "GET"
-        , headers = []
+        , headers = authorizationHeader maybeToken
         , url = getQueryUrl Nothing url params.name (Parameters { params | limit = limit })
         , body = Http.emptyBody
         , expect = Http.expectJson (Decode.list decoder)
@@ -465,11 +465,11 @@ list limit url (Query _ (Parameters params) decoder) =
 
 {-| Takes `url` and a `query`, returns an Http.Request
 -}
-first : String -> Query uniq schema a -> Http.Request (Maybe a)
-first url (Query _ (Parameters params) decoder) =
+first : String -> Maybe String -> Query uniq schema a -> Http.Request (Maybe a)
+first url maybeToken (Query _ (Parameters params) decoder) =
     Http.request
         { method = "GET"
-        , headers = singularHeader
+        , headers = authorizationHeader maybeToken ++ singularHeader
         , url = getQueryUrl Nothing url params.name (Parameters params)
         , body = Http.emptyBody
         , expect = Http.expectJson (Decode.nullable decoder)
@@ -479,8 +479,8 @@ first url (Query _ (Parameters params) decoder) =
 
 
 {-| -}
-paginate : { pageNumber : Int, pageSize : Int } -> String -> Query uniq schema a -> Http.Request (Page a)
-paginate { pageNumber, pageSize } url (Query _ (Parameters params) decoder) =
+paginate : { pageNumber : Int, pageSize : Int } -> String -> Maybe String -> Query uniq schema a -> Http.Request (Page a)
+paginate { pageNumber, pageSize } url maybeToken (Query _ (Parameters params) decoder) =
     let
         handleResponse response =
             let
@@ -497,7 +497,7 @@ paginate { pageNumber, pageSize } url (Query _ (Parameters params) decoder) =
     in
     Http.request
         { method = "GET"
-        , headers = countExactHeader
+        , headers = authorizationHeader maybeToken ++ countExactHeader
         , url =
             getQueryUrl
                 (Just <| (pageNumber - 1) * pageSize)

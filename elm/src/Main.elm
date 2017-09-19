@@ -57,7 +57,7 @@ init flags location =
 
 view : Model -> Html Msg
 view model =
-    case model.authState |> Auth.fromState of
+    case Auth.fromState model.authState of
         Just auth ->
             Html.div []
                 [ viewNavbar model.navbarState auth
@@ -155,7 +155,7 @@ setRoute maybeRoute model =
         Just Route.VotingList ->
             let
                 ( votingListModel, votingListCmd ) =
-                    Page.VotingList.init
+                    Page.VotingList.init <| Maybe.map .token <| Auth.fromState model.authState
             in
             { model | page = VotingList votingListModel } => Cmd.map VotingListMsg votingListCmd
 
