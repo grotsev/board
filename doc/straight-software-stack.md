@@ -96,6 +96,154 @@ SPA система превращает эти протоколы один в д
 * nginx : HTTP -> HTTP
 * семейство port : SQL -> External Protocol для разных внешних протоколов, например SMS
 
+== Рабочая среда ==
+
+=== Docker ===
+
+[https://docs.docker.com/engine/installation/linux/ubuntu/#install-using-the-repository Инструкция]
+
+ <nowiki>
+$ sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+$ sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+$ sudo apt-get update
+$ sudo apt-get -y install docker-ce</nowiki>
+
+Полезные команды
+
+ <nowiki>
+$ docker version
+$ sudo docker images
+$ sudo docker ps
+$ sudo docker inspect NAME
+$ sudo docker run OPTIONS
+$ sudo docker restart NAME</nowiki>
+
+=== PostgreSQL ===
+
+[https://hub.docker.com/_/postgres/ Инструкция]
+
+Создать контейнер с именем db, базой postgres, паролем суперпользователя 111
+
+ <nowiki>
+$ sudo docker run --name db -e POSTGRES_PASSWORD=111 -d postgres</nowiki>
+
+Подсоединиться psql в ещё одном безымянном контейнере из образа postgres к базе в уже запущенном контейнере db
+
+ <nowiki>
+$ sudo docker run -it --rm --link db:postgres postgres psql -h postgres -U postgres</nowiki>
+
+Перезагрузить контейнер, в том числе после перезагрузки физического компьютера
+
+ <nowiki>
+$ sudo docker restart db</nowiki>
+
+Узнать IP адрес контейнера, чтобы присоединиться через DbVisualizer или DBeaver
+
+ <nowiki>
+$ sudo docker inspect db | grep '"IPAddress"'</nowiki>
+
+=== DBeaver ===
+
+Бесплатная и мощная надстройка над Eclipse для просмотра базы, аналог DBVisualizer. [http://dbeaver.jkiss.org/ DBeaver]
+
+=== PostgREST ===
+
+Документация [https://postgrest.com/en/v4.3/]
+
+[https://postgrest.com/en/v0.4/install.html Инструкция] - скачать с гитхаба, разархивировать один бинарник, для удобства поместить бинарник в переменную окружения $PATH, создать конфиг из трёх строк, запустить бинарник с конфигом в аргументе.
+
+ <nowiki>
+$ tar zxf postgrest-[version]-[platform].tar.xz
+
+$ ./postgrest --help</nowiki>
+
+Пример postgrest.config
+
+ <nowiki>
+# "postgres://user:pass@host:5432/dbname"
+db-uri       = "postgres://postgres:111@172.17.0.2:5432/postgres"
+
+# The name of which database schema to expose to REST clients
+db-schema    = "scoring"
+
+# The database role to use when no client authentication is provided.
+# Can (and probably should) differ from user in db-uri
+db-anon-role = "postgres"</nowiki>
+
+Запуск
+
+ <nowiki>
+$ postgrest postgrest.config</nowiki>
+
+=== curl ===
+
+curl позволяет из консоли выполнять HTTP запросы.
+
+Тестирование функции login, которая возвращает JWT токен
+
+ <nowiki>
+$ curl -X POST -H "Content-Type: application/json" -d '{"login":"den","password":"123456"}' http://localhost:3001/rpc/login
+</nowiki>
+
+Тестирование выборки из таблицы voting REST сервиса с HTTP заголовком авторизации, который содержит JWT токен
+
+ <nowiki>
+$ curl -H "Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdGFmZiI6ImYwZjg3NDdhLTk2ZWQtMTFlNy1hMjFkLTkzOGJkY2MyN2YxMiIsInJvbGUiOiJzdGFmZiIsImV4cCI6MTUwNTkxMTE5OH0.lhxemg7tdH7YrytrvwC4sdyXKIX1fwwKtvseFAwwsl0" http://localhost:3001/voting?select=title,voting,period</nowiki>
+
+=== Elm ===
+
+Язык клиентской Web разработки. [http://elm-lang.org/]
+
+Синтаксис языка за полчаса. [http://elm-lang.org/docs/syntax]
+
+Введение в Elm за пару дней. [https://guide.elm-lang.org/]
+
+Стандартная библиотека Elm. [http://package.elm-lang.org/packages/elm-lang/core/latest]
+
+Репозиторий пакетов, включая документацию к ним. [http://package.elm-lang.org/]
+
+Пример архитектуры большого Elm приложения. [https://github.com/rtfeldman/elm-spa-example]
+
+Установка [https://guide.elm-lang.org/install.html]
+* elm-repl вычисление Elm выражений
+* elm-reactor запуск приложения во время разработки, содержит отладчик путешествия во времени
+* elm-make компиляция
+* elm-package скачивание пакетов зависимостей из репозитория
+
+ <nowiki>
+$ npm install -g elm
+</nowiki>
+
+Подсказки по коду
+
+ <nowiki>
+$ npm install -g elm-oracle
+</nowiki>
+
+Стандартное форматирование кода
+
+ <nowiki>
+$ npm install -g elm-format@exp
+</nowiki>
+
+=== Sublime Text ===
+
+Редактор кода [https://www.sublimetext.com/]
+
+Установить Package Control [https://packagecontrol.io/installation]
+
+Через него установит Elm Language Support плагин [https://packagecontrol.io/packages/Elm%20Language%20Support]
+
+== Пример приложения Board ==
+
 == Ссылки ==
 
 Раздел математики, изучающий, как соединять стрелочки называется Теория категорий.
