@@ -190,8 +190,7 @@ curl позволяет из консоли выполнять HTTP запрос
 Тестирование функции login, которая возвращает JWT токен
 
  <nowiki>
-$ curl -X POST -H "Content-Type: application/json" -d '{"login":"den","password":"123456"}' http://localhost:3001/rpc/login
-</nowiki>
+$ curl -X POST -H "Content-Type: application/json" -d '{"login":"den","password":"123456"}' http://localhost:3001/rpc/login</nowiki>
 
 Тестирование выборки из таблицы voting REST сервиса с HTTP заголовком авторизации, который содержит JWT токен
 
@@ -219,20 +218,17 @@ $ curl -H "Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdGFmZiI
 * elm-package скачивание пакетов зависимостей из репозитория
 
  <nowiki>
-$ npm install -g elm
-</nowiki>
+$ npm install -g elm</nowiki>
 
 Подсказки по коду
 
  <nowiki>
-$ npm install -g elm-oracle
-</nowiki>
+$ npm install -g elm-oracle</nowiki>
 
 Стандартное форматирование кода
 
  <nowiki>
-$ npm install -g elm-format@exp
-</nowiki>
+$ npm install -g elm-format@exp</nowiki>
 
 === Sublime Text ===
 
@@ -241,6 +237,18 @@ $ npm install -g elm-format@exp
 Установить Package Control [https://packagecontrol.io/installation]
 
 Через него установит Elm Language Support плагин [https://packagecontrol.io/packages/Elm%20Language%20Support]
+
+Рекомендуемые настройки Preferences / Settings
+ <nowiki>
+{
+  "bold_folder_labels": true,
+  "highlight_line": true,
+  "highlight_modified_tabs": true,
+  "preview_on_click": true,
+  "tab_size": 2,
+  "translate_tabs_to_spaces": true,
+  "trim_trailing_white_space_on_save": true
+}</nowiki>
 
 == Пример приложения Board ==
 
