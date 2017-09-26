@@ -8,7 +8,6 @@ live_model='
   lib/domain/textarea
   lib/domain/textfield
   lib/domain/uuid_pk
-  lib/macro/macro_elm_field
   lib/table/i18n
   lib/table/rel
   lib/table/attr
@@ -40,6 +39,7 @@ live_data='
 '
 
 dev_model='
+  lib/macro/macro_elm_field
   dev/function/*
   dev/test/*
 '
