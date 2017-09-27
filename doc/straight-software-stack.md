@@ -220,18 +220,19 @@ $ curl -H "Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdGFmZiI
 * elm-reactor запуск приложения во время разработки, содержит отладчик путешествия во времени
 * elm-make компиляция
 * elm-package скачивание пакетов зависимостей из репозитория
+* elm-oracle подсказки по коду
+* elm-format стандартное форматирование кода
+
+Предпочтительно установить локально, перейдя в директорию проекта и выполнив
 
  <nowiki>
-$ npm install -g elm</nowiki>
+$ npm install</nowiki>
 
-Подсказки по коду
-
- <nowiki>
-$ npm install -g elm-oracle</nowiki>
-
-Стандартное форматирование кода
+Глобальная установка в системе
 
  <nowiki>
+$ npm install -g elm
+$ npm install -g elm-oracle
 $ npm install -g elm-format@exp</nowiki>
 
 === Sublime Text ===
@@ -242,7 +243,7 @@ $ npm install -g elm-format@exp</nowiki>
 
 Через него установит Elm Language Support плагин [https://packagecontrol.io/packages/Elm%20Language%20Support]
 
-Рекомендуемые настройки Preferences / Settings
+Рекомендуемые настройки '''Preferences / Settings'''
  <nowiki>
 {
   "bold_folder_labels": true,
@@ -253,6 +254,11 @@ $ npm install -g elm-format@exp</nowiki>
   "translate_tabs_to_spaces": true,
   "trim_trailing_white_space_on_save": true
 }</nowiki>
+
+При локальной установке Elm в '''Package Settings / Elm Language Support / Settings''' нужно добавить абсолютный путь, где находятся elm-format elm-oracle, например,
+
+ <nowiki>
+"elm_paths": "/users/alex/elm-format:/users/alex/elm-oracle"</nowiki>
 
 == Пример приложения Board ==
 
