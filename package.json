@@ -8,7 +8,15 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "elm": "elm"
+    "elm": "elm",
+    "elm-format": "elm-format",
+    "elm-make": "elm-make",
+    "elm-oracle": "elm-oracle",
+    "elm-package": "elm-package",
+    "elm-reactor": "elm-reactor",
+    "elm-repl": "elm-repl",
+
+    "postinstall": "elm-package install -y"
   },
   "repository": {
     "type": "git",
