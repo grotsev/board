@@ -134,25 +134,30 @@ $ sudo docker restart NAME</nowiki>
 
 [https://hub.docker.com/_/postgres/ Инструкция]
 
-Создать контейнер с именем db, базой postgres, паролем суперпользователя 111
+Собрать образ, описанный в '''board/docker/postgresql/Dockerfile''' и пометить его тегом '''greetgo/postgresql'''
 
  <nowiki>
-$ sudo docker run --name db -e POSTGRES_PASSWORD=111 -d postgres</nowiki>
+docker build -t greetgo/postgresql docker/postgresql</nowiki>
 
-Подсоединиться psql в ещё одном безымянном контейнере из образа postgres к базе в уже запущенном контейнере db
+Из образа '''greetgo/postgres''' создать контейнер с именем '''pg''', базой postgres, паролем суперпользователя 111
 
  <nowiki>
-$ sudo docker run -it --rm --link db:postgres postgres psql -h postgres -U postgres</nowiki>
+$ sudo docker run --name pg -e POSTGRES_PASSWORD=111 -d greetgo/postgres</nowiki>
+
+Подсоединиться psql в ещё одном безымянном контейнере из образа '''greetgo/postgres''' к базе в уже запущенном контейнере '''pg'''
+
+ <nowiki>
+$ sudo docker run -it --rm --link pg:postgres greetgo/postgres psql -h postgres -U postgres</nowiki>
 
 Перезагрузить контейнер, в том числе после перезагрузки физического компьютера
 
  <nowiki>
-$ sudo docker restart db</nowiki>
+$ sudo docker restart pg</nowiki>
 
 Узнать IP адрес контейнера, чтобы присоединиться через DbVisualizer или DBeaver
 
  <nowiki>
-$ sudo docker inspect db | grep '"IPAddress"'</nowiki>
+$ sudo docker inspect pg | grep '"IPAddress"'</nowiki>
 
 === DBeaver ===
 
