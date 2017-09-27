@@ -1,4 +1,4 @@
-create function new_vote
+create or replace function new_vote
 ( voting uuid
 , option uuid
 ) returns void

@@ -1,4 +1,4 @@
-create function login
+create or replace function login
 ( login       textfield
 , password    textfield
 , out staff        uuid

@@ -1,4 +1,4 @@
-create function new_voting
+create or replace function new_voting
 ( title textfield
 ) returns uuid
   language sql

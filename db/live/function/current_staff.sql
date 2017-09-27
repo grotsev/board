@@ -1,4 +1,4 @@
-create function current_staff
+create or replace function current_staff
 () returns uuid
   language sql
   stable

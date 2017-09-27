@@ -1,4 +1,4 @@
-create function login_exists
+create or replace function login_exists
 ( login   textfield
 ) returns boolean
   language sql

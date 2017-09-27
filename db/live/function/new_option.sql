@@ -1,4 +1,4 @@
-create function new_option
+create or replace function new_option
 ( voting uuid
 , title textfield
 ) returns uuid

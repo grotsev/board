@@ -1,4 +1,4 @@
-create function register
+create or replace function register
 ( login       textfield
 , password    textfield
 , in out surname     textfield

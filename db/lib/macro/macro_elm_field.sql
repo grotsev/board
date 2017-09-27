@@ -1,4 +1,4 @@
-create function macro_elm_field(
+create or replace function macro_elm_field(
   i18n code
 ) returns text
   language plpgsql
