@@ -1,0 +1,23 @@
+{
+  "name": "board",
+  "version": "1.0.0",
+  "description": "Company auxiliary business processes web service",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "elm": "elm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://192.168.11.4/investigation/board.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "elm": "^0.18.0",
+    "elm-oracle": "^1.1.1"
+  }
+}
