@@ -16,6 +16,7 @@ alter role board with superuser;
 set local role board;
 create extension if not exists "uuid-ossp";
 create extension if not exists "pgcrypto";
+create extension if not exists "pgjwt";
 reset role;
 alter role board with nosuperuser;
 

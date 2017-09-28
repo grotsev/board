@@ -3,7 +3,6 @@
 mkdir -p db/build/
 
 live_model='
-  lib/extension/pgjwt
   lib/domain/code
   lib/domain/textarea
   lib/domain/textfield
