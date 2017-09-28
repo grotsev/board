@@ -137,17 +137,17 @@ $ sudo docker restart NAME</nowiki>
 Собрать образ, описанный в '''board/docker/postgresql/Dockerfile''' и пометить его тегом '''greetgo/postgresql'''
 
  <nowiki>
-docker build -t greetgo/postgresql docker/postgresql</nowiki>
+sudo docker build -t greetgo/postgresql docker/postgresql</nowiki>
 
-Из образа '''greetgo/postgres''' создать контейнер с именем '''pg''', базой postgres, паролем суперпользователя 111
-
- <nowiki>
-$ sudo docker run --name pg -e POSTGRES_PASSWORD=111 -d greetgo/postgres</nowiki>
-
-Подсоединиться psql в ещё одном безымянном контейнере из образа '''greetgo/postgres''' к базе в уже запущенном контейнере '''pg'''
+Из образа '''greetgo/postgresql''' создать контейнер с именем '''pg''', базой postgres, паролем суперпользователя 111
 
  <nowiki>
-$ sudo docker run -it --rm --link pg:postgres greetgo/postgres psql -h postgres -U postgres</nowiki>
+$ sudo docker run --name pg -e POSTGRES_PASSWORD=111 -d greetgo/postgresql</nowiki>
+
+Подсоединиться psql в ещё одном безымянном контейнере из образа '''greetgo/postgresql''' к базе в уже запущенном контейнере '''pg'''
+
+ <nowiki>
+$ sudo docker run -it --rm --link pg:postgres greetgo/postgresql psql -h postgres -U postgres</nowiki>
 
 Перезагрузить контейнер, в том числе после перезагрузки физического компьютера
 
@@ -205,6 +205,10 @@ $ curl -X POST -H "Content-Type: application/json" -d '{"login":"den","password"
 
  <nowiki>
 $ curl -H "Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdGFmZiI6ImYwZjg3NDdhLTk2ZWQtMTFlNy1hMjFkLTkzOGJkY2MyN2YxMiIsInJvbGUiOiJzdGFmZiIsImV4cCI6MTUwNTkxMTE5OH0.lhxemg7tdH7YrytrvwC4sdyXKIX1fwwKtvseFAwwsl0" http://localhost:3001/voting?select=title,voting,period</nowiki>
+
+=== Liquibase ===
+
+[http://download.liquibase.org/ Скачать], распоковать, добавить в PATH. В '''lib''' директорию, где лежит liquibase добавить [https://jdbc.postgresql.org/download.html#current PostgeSQL JDBC драйвер].
 
 === Elm ===
 
@@ -497,3 +501,4 @@ Liquibase поддерживает откат релиза. Но как пока
 * Генерация Elm Data, Rpc, Resource.
 * Детализация распределения прав.
 * Индексы таблиц.
+* Перевести рабочую среду разработки на Nix.

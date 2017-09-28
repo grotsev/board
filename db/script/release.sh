@@ -9,14 +9,14 @@ else
 fi
 
 out=db/build/release/$release_name
-liquibase.sh --driver=oracle.jdbc.OracleDriver \
-        --url=jdbc:oracle:thin:@testdb:1521:test \
-        --username=bob \
-        --password=bob \
+liquibase \
+        --url=jdbc:postgresql://172.17.0.2:5432/postgres \
+        --username=owner \
+        --password=changeme \
     diff \
-        --referenceUrl=jdbc:oracle:thin:@localhost/XE \
-        --referenceUsername=bob \
-        --referencePassword=bob
+        --referenceUrl=jdbc:postgresql://172.17.0.2:5432/postgres \
+        --referenceUsername=owner \
+        --referencePassword=changeme
 
 out=db/build/release/function.sql
 rm -f $out
