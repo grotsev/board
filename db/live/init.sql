@@ -1,4 +1,3 @@
-
 create schema live;
 
 alter default privileges for role board in schema live revoke execute on functions from public;

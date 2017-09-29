@@ -10,7 +10,7 @@ EOF
 }
 
 function in_mode {
-  if [[ $1 -eq "live" ]]; then
+  if [ "$1" == "live" ]; then
     p='live, public'
   else
     p='dev, live, public'
@@ -21,16 +21,14 @@ function in_mode {
   psql postgres://board:changeme@172.17.0.2:5432/$1 -q1 --file db/build/$2-data.sql
 }
 
-if [[ $1 -eq "alpha" ]]; then
+if [ "$1" == "alpha" ]; then
   clean alpha && \
   in_mode alpha live && \
   in_mode alpha dev
+elif [ "$1" == "beta" ]; then
+  clean beta && \
+  in_mode beta live && \
+  in_mode beta dev
 else
-  if [[ $1 -eq "beta" ]]; then
-    clean beta && \
-#    liquibase TODO && \
-    in_mode beta dev
-  else
-    echo "Unknown argument"
-  fi
+  echo "Unknown argument"
 fi
