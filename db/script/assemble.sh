@@ -3,6 +3,7 @@
 mkdir -p db/build/
 
 live_model='
+  live/init
   lib/domain/code
   lib/domain/textarea
   lib/domain/textfield
@@ -38,6 +39,7 @@ live_data='
 '
 
 dev_model='
+  dev/init
   lib/macro/macro_elm_field
   dev/function/*
   dev/test/*
