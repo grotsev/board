@@ -19,6 +19,7 @@ live_model='
   live/table/voting
   live/table/option
   live/table/vote
+  live/type/auth
   live/type/jwt_token
   live/function/*
   live/grant/*

@@ -1,18 +1,14 @@
 create or replace function login
 ( login       textfield
 , password    textfield
-, out staff        uuid
-, out role         name
-, out exp          int4
-, out surname textfield
-, out name    textfield
-, out token        text
-)
+) returns auth
   language plpgsql
   stable
   strict
   security definer
 as $function$
+declare
+  auth auth;
 begin
 
   select t.staff
@@ -34,7 +30,7 @@ begin
     where t.login = login.login
       and password_hash = crypt(login.password, password_hash)
     ) t
-  into staff, role, exp, surname, name, token;
+  into auth;
 
   if not found then
     raise sqlstate 'A0001' using
@@ -42,6 +38,8 @@ begin
       detail = login,
       hint = 'Provide correct login and password';
   end if;
+
+  return auth;
 
 end;
 $function$;
