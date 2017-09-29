@@ -1,7 +1,8 @@
 create table voting
-( voting   uuid_pk not null
-, title  textfield not null
-, period tstzrange
+( voting       uuid_pk not null
+, title      textfield not null
+, description textarea
+, period     tstzrange
 
 , primary key (voting)
 );

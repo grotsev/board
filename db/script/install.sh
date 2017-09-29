@@ -1,14 +1,5 @@
 #!/bin/bash
 
-function clean {
-  psql postgres://postgres:111@172.17.0.2:5432/$1 -q <<EOF
-set client_min_messages to warning;
-drop schema if exists dev cascade;
-drop schema if exists live cascade;
-drop owned by board cascade;
-EOF
-}
-
 function in_mode {
   if [ "$1" == "live" ]; then
     p='live, public'
@@ -22,11 +13,11 @@ function in_mode {
 }
 
 if [ "$1" == "alpha" ]; then
-  clean alpha && \
+  db/script/clean.sh alpha && \
   in_mode alpha live && \
   in_mode alpha dev
 elif [ "$1" == "beta" ]; then
-  clean beta && \
+  db/script/clean.sh beta && \
   liquibase \
       --url=jdbc:postgresql://172.17.0.2:5432/beta \
       --username=board \
@@ -35,5 +26,5 @@ elif [ "$1" == "beta" ]; then
       update && \
   in_mode beta dev
 else
-  echo "Unknown argument"
+  echo "Unknown database as first argument"
 fi
