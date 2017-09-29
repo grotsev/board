@@ -27,7 +27,12 @@ if [ "$1" == "alpha" ]; then
   in_mode alpha dev
 elif [ "$1" == "beta" ]; then
   clean beta && \
-  in_mode beta live && \
+  liquibase \
+      --url=jdbc:postgresql://172.17.0.2:5432/beta \
+      --username=board \
+      --password=changeme \
+      --changeLogFile=db/release/changelog.xml \
+      update && \
   in_mode beta dev
 else
   echo "Unknown argument"
