@@ -1,24 +1,12 @@
 #!/bin/bash
 
-mkdir -p db/build/release
-
 if [[ $# -eq 0 ]]; then
-  release_name=`date +%g%V`-`git rev-parse --abbrev-ref HEAD`.sql
+  release_name=`date +%g%V`-`git rev-parse --abbrev-ref HEAD`
 else
-  release_name=`date +%g%V`-$1.sql
+  release_name=`date +%g%V`-$1
 fi
 
-out=db/build/release/$release_name
-liquibase \
-        --url=jdbc:postgresql://172.17.0.2:5432/postgres \
-        --username=owner \
-        --password=changeme \
-    diff \
-        --referenceUrl=jdbc:postgresql://172.17.0.2:5432/postgres \
-        --referenceUsername=owner \
-        --referencePassword=changeme
-
-out=db/build/release/function.sql
+out=db/release/function.sql
 rm -f $out
 echo '--liquibase formatted sql'$'\n' >> $out
 for f in db/live/function/*
@@ -28,3 +16,8 @@ do
   echo $'\n' >> $out
 done
 
+touch db/release/$release_name.sql
+
+echo "    Check"
+echo db/release/function.sql
+echo db/release/$release_name.sql

@@ -5,8 +5,8 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-  <include file="release/1739-origin.sql"/>
-  <include file="release/1739-some-fix.sql"/>
+  <include file="db/release/1739-origin.sql"/>
+  <include file="db/release/1739-some-fix.sql"/>
 
-  <include file="release/function.sql"/>
+  <include file="db/release/function.sql"/>
 </databaseChangeLog>
