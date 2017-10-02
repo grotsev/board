@@ -21,8 +21,8 @@ type alias State =
     }
 
 
-votingCmd : Maybe String -> Cmd Msg
-votingCmd maybeToken =
+votingListCmd : Maybe String -> Cmd Msg
+votingListCmd maybeToken =
     Pg.query Resource.voting Voting
         |> Pg.select .voting
         |> Pg.select .title
@@ -39,7 +39,7 @@ init maybeToken =
                     Cmd.none
 
                 Just _ ->
-                    votingCmd maybeToken
+                    votingListCmd maybeToken
     in
     { votingList = [] } => cmd
 
