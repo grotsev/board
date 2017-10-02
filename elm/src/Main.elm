@@ -1,6 +1,5 @@
 module Main exposing (main)
 
-import Auth
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Navbar as Navbar
@@ -9,6 +8,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as Decode exposing (Value)
 import Navigation exposing (Location)
+import Page.Auth
 import Page.Home
 import Page.NotFound
 import Page.Voting
@@ -21,7 +21,7 @@ type Page
     = Home
     | NotFound
     | VotingList Page.VotingList.State
-    | Voting Page.Voting.Model
+    | Voting Page.Voting.State
 
 
 
@@ -32,7 +32,7 @@ type alias Model =
     { navbarState : Navbar.State
     , maybeRoute : Maybe Route
     , page : Page
-    , authState : Auth.State
+    , authState : Page.Auth.State
     }
 
 
@@ -47,7 +47,7 @@ init flags location =
                 { navbarState = navbarState
                 , maybeRoute = Route.fromLocation location
                 , page = Home
-                , authState = Auth.init
+                , authState = Page.Auth.init
                 }
     in
     model ! [ navbarCmd, pageCmd ]
@@ -59,7 +59,7 @@ init flags location =
 
 view : Model -> Html Msg
 view model =
-    case Auth.fromState model.authState of
+    case Page.Auth.fromState model.authState of
         Just auth ->
             Html.div []
                 [ viewNavbar model.navbarState auth
@@ -67,7 +67,7 @@ view model =
                 ]
 
         Nothing ->
-            Auth.view model.authState |> Html.map AuthMsg
+            Page.Auth.view model.authState |> Html.map AuthMsg
 
 
 viewNavbar : Navbar.State -> Auth -> Html Msg
@@ -140,29 +140,44 @@ subscriptions model =
 type Msg
     = SetRoute (Maybe Route)
     | NavbarMsg Navbar.State
-    | AuthMsg Auth.Msg
+    | AuthMsg Page.Auth.Msg
     | LogoutMsg
     | VotingListMsg Page.VotingList.Msg
+    | VotingMsg Page.Voting.Msg
 
 
 routeToPage : Model -> ( Model, Cmd Msg )
 routeToPage model =
-    case model.maybeRoute of
+    case Page.Auth.fromState model.authState of
+        Just auth ->
+            case model.maybeRoute of
+                Nothing ->
+                    { model | page = NotFound } => Cmd.none
+
+                Just Route.Home ->
+                    { model | page = Home } => Cmd.none
+
+                Just Route.VotingList ->
+                    let
+                        ( votingListModel, votingListCmd ) =
+                            Page.VotingList.init auth.token
+                    in
+                    { model | page = VotingList votingListModel } => Cmd.map VotingListMsg votingListCmd
+
+                Just (Route.Voting voting) ->
+                    let
+                        ( votingModel, votingCmd ) =
+                            Page.Voting.init auth.token voting
+                    in
+                    { model | page = Voting votingModel } => Cmd.map VotingMsg votingCmd
+
         Nothing ->
-            { model | page = NotFound } => Cmd.none
+            model => Cmd.none
 
-        Just Route.Home ->
-            { model | page = Home } => Cmd.none
 
-        Just Route.VotingList ->
-            let
-                ( votingListModel, votingListCmd ) =
-                    Page.VotingList.init <| Maybe.map .token <| Auth.fromState model.authState
-            in
-            { model | page = VotingList votingListModel } => Cmd.map VotingListMsg votingListCmd
 
-        Just (Route.Voting voting) ->
-            { model | page = Voting Page.Voting.init } => Page.Voting.initCmd
+--Just (Route.Voting voting) ->
+--  { model | page = Voting Page.Voting.init } => Page.Voting.initCmd
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -177,7 +192,7 @@ update msg model =
         AuthMsg subMsg ->
             let
                 ( authState, authCmd ) =
-                    Auth.update subMsg model.authState
+                    Page.Auth.update subMsg model.authState
 
                 ( routeModel, routeCmd ) =
                     routeToPage { model | authState = authState }
@@ -185,7 +200,7 @@ update msg model =
             routeModel ! [ Cmd.map AuthMsg authCmd, routeCmd ]
 
         LogoutMsg ->
-            { model | authState = Auth.init } => Cmd.none
+            { model | authState = Page.Auth.init } => Cmd.none
 
         VotingListMsg subMsg ->
             case model.page of
@@ -195,6 +210,18 @@ update msg model =
                             Page.VotingList.update subMsg subState
                     in
                     { model | page = VotingList newSubState } => Cmd.map VotingListMsg subCmd
+
+                _ ->
+                    model => Cmd.none
+
+        VotingMsg subMsg ->
+            case model.page of
+                Voting subState ->
+                    let
+                        ( newSubState, subCmd ) =
+                            Page.Voting.update subMsg subState
+                    in
+                    { model | page = Voting newSubState } => Cmd.map VotingMsg subCmd
 
                 _ ->
                     model => Cmd.none

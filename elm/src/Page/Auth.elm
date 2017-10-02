@@ -1,4 +1,4 @@
-module Auth exposing (Msg, State, fromState, init, update, view)
+module Page.Auth exposing (Msg, State, fromState, init, update, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Tab as Tab
@@ -12,6 +12,9 @@ import Postgrest
 import Rocket exposing ((=>))
 import Rpc
 import Validate exposing (Validation)
+
+
+-- MODEL --
 
 
 type alias State =
@@ -31,22 +34,6 @@ type alias State =
     --
     , tabState : Tab.State
     }
-
-
-type Msg
-    = LoginMsg String
-    | PasswordMsg String
-    | PasswordAgainMsg String
-    | SurnameMsg String
-    | NameMsg String
-    | DobMsg DateTimePicker.State (Maybe Date)
-      --
-    | LoginRequest
-    | RegisterRequest
-    | AuthResult (Postgrest.Result Auth)
-    | LoginExistsResult (Postgrest.Result Bool)
-      --
-    | TabMsg Tab.State
 
 
 init : State
@@ -69,48 +56,8 @@ init =
     }
 
 
-update : Msg -> State -> ( State, Cmd Msg )
-update msg state =
-    case msg of
-        LoginMsg login ->
-            ( { state | login = login, loginExistsResponse = Nothing }
-            , Postgrest.send LoginExistsResult <| Rpc.loginExists Nothing { login = login }
-            )
 
-        PasswordMsg password ->
-            { state | password = password } => Cmd.none
-
-        PasswordAgainMsg passwordAgain ->
-            { state | passwordAgain = passwordAgain } => Cmd.none
-
-        SurnameMsg surname ->
-            { state | surname = surname } => Cmd.none
-
-        NameMsg name ->
-            { state | name = name } => Cmd.none
-
-        DobMsg dobState dob ->
-            { state | dob = dob, dobState = dobState } => Cmd.none
-
-        LoginRequest ->
-            ( { state | authLoading = True }
-            , Postgrest.send AuthResult <| Rpc.login Nothing state
-            )
-
-        RegisterRequest ->
-            ( { state | authLoading = True }
-            , Postgrest.send AuthResult <|
-                Rpc.register Nothing { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
-            )
-
-        AuthResult result ->
-            { state | authLoading = False, authResponse = Just result } => Cmd.none
-
-        LoginExistsResult result ->
-            { state | loginExistsResponse = Just result } => Cmd.none
-
-        TabMsg tabState ->
-            { state | tabState = tabState } => Cmd.none
+-- VIEW --
 
 
 view : State -> Html Msg
@@ -258,6 +205,74 @@ viewRegister { login, password, passwordAgain, surname, name, dobState, dob, aut
             , dobField
             ]
         ]
+
+
+
+-- UPDATE --
+
+
+type Msg
+    = LoginMsg String
+    | PasswordMsg String
+    | PasswordAgainMsg String
+    | SurnameMsg String
+    | NameMsg String
+    | DobMsg DateTimePicker.State (Maybe Date)
+      --
+    | LoginRequest
+    | RegisterRequest
+    | AuthResult (Postgrest.Result Auth)
+    | LoginExistsResult (Postgrest.Result Bool)
+      --
+    | TabMsg Tab.State
+
+
+update : Msg -> State -> ( State, Cmd Msg )
+update msg state =
+    case msg of
+        LoginMsg login ->
+            ( { state | login = login, loginExistsResponse = Nothing }
+            , Postgrest.send LoginExistsResult <| Rpc.loginExists Nothing { login = login }
+            )
+
+        PasswordMsg password ->
+            { state | password = password } => Cmd.none
+
+        PasswordAgainMsg passwordAgain ->
+            { state | passwordAgain = passwordAgain } => Cmd.none
+
+        SurnameMsg surname ->
+            { state | surname = surname } => Cmd.none
+
+        NameMsg name ->
+            { state | name = name } => Cmd.none
+
+        DobMsg dobState dob ->
+            { state | dob = dob, dobState = dobState } => Cmd.none
+
+        LoginRequest ->
+            ( { state | authLoading = True }
+            , Postgrest.send AuthResult <| Rpc.login Nothing state
+            )
+
+        RegisterRequest ->
+            ( { state | authLoading = True }
+            , Postgrest.send AuthResult <|
+                Rpc.register Nothing { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
+            )
+
+        AuthResult result ->
+            { state | authLoading = False, authResponse = Just result } => Cmd.none
+
+        LoginExistsResult result ->
+            { state | loginExistsResponse = Just result } => Cmd.none
+
+        TabMsg tabState ->
+            { state | tabState = tabState } => Cmd.none
+
+
+
+-- PUBLIC HELPERS --
 
 
 fromState : State -> Maybe Auth

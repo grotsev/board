@@ -10,6 +10,9 @@ import Route
 import Uuid exposing (Uuid)
 
 
+-- MODEL --
+
+
 type alias Voting =
     { voting : Uuid
     , title : String
@@ -21,27 +24,22 @@ type alias State =
     }
 
 
-votingListCmd : Maybe String -> Cmd Msg
-votingListCmd maybeToken =
+votingListCmd : String -> Cmd Msg
+votingListCmd token =
     Pg.query Resource.voting Voting
         |> Pg.select .voting
         |> Pg.select .title
-        |> Pg.list Pg.noLimit "http://localhost:3001/" maybeToken
+        |> Pg.list Pg.noLimit "http://localhost:3001/" (Just token)
         |> Http.send Fetch
 
 
-init : Maybe String -> ( State, Cmd Msg )
-init maybeToken =
-    let
-        cmd =
-            case maybeToken of
-                Nothing ->
-                    Cmd.none
+init : String -> ( State, Cmd Msg )
+init token =
+    { votingList = [] } => votingListCmd token
 
-                Just _ ->
-                    votingListCmd maybeToken
-    in
-    { votingList = [] } => cmd
+
+
+-- VIEW --
 
 
 view : State -> List (Html msg)
@@ -51,13 +49,13 @@ view { votingList } =
         , thead =
             Table.simpleThead
                 [ Table.th [] [ Html.text "Название" ] ]
-        , tbody = Table.tbody [] <| List.map row votingList
+        , tbody = Table.tbody [] <| List.map viewRow votingList
         }
     ]
 
 
-row : Voting -> Table.Row msg
-row voting =
+viewRow : Voting -> Table.Row msg
+viewRow voting =
     Table.tr []
         [ Table.td []
             [ Html.a [ Route.href <| Route.Voting voting.voting ] [ Html.text voting.title ]

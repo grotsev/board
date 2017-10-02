@@ -4,7 +4,11 @@ import Html exposing (Html)
 import Http
 import Postgrest as Pg
 import Resource
+import Rocket exposing ((=>))
 import Uuid exposing (Uuid)
+
+
+-- MODEL --
 
 
 type alias Voting =
@@ -26,12 +30,13 @@ type alias Staff =
     }
 
 
-type alias Model =
-    Maybe Option
+type alias State =
+    { voting : Maybe Voting
+    }
 
 
-votingCmd : Maybe String -> Cmd Msg
-votingCmd maybeToken =
+votingCmd : String -> Uuid -> Cmd Msg
+votingCmd token voting =
     let
         optionQuery =
             Pg.query Resource.option Option
@@ -39,21 +44,21 @@ votingCmd maybeToken =
     Pg.query Resource.voting Voting
         |> Pg.select .voting
         |> Pg.select .title
-        |> Pg.first "http://localhost:3001/" maybeToken
+        |> Pg.filter [ .voting |> Pg.eq voting ]
+        |> Pg.first "http://localhost:3001/" (Just token)
         |> Http.send Fetch
 
 
-init : Model
-init =
-    Nothing
+init : String -> Uuid -> ( State, Cmd Msg )
+init token voting =
+    { voting = Nothing } => votingCmd token voting
 
 
-initCmd : Cmd msg
-initCmd =
-    Cmd.none
+
+-- VIEW --
 
 
-view : Model -> List (Html msg)
+view : State -> List (Html msg)
 view model =
     [ Html.h2 [] [ Html.text "Ok" ]
     ]
@@ -65,3 +70,13 @@ view model =
 
 type Msg
     = Fetch (Result Http.Error (Maybe Voting))
+
+
+update : Msg -> State -> ( State, Cmd Msg )
+update msg state =
+    case msg of
+        Fetch (Ok (Just voting)) ->
+            { state | voting = Just voting } => Cmd.none
+
+        _ ->
+            state => Cmd.none
