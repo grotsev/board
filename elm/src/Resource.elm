@@ -48,11 +48,11 @@ type Vote
 
 vote :
     Pg.Resource Vote
-        { staff : Pg.Relation Pg.HasMany Staff
+        { staff : Pg.Relation Pg.HasOne Staff
         }
 vote =
     resource Vote "vote" <|
-        { staff = Pg.hasMany Staff
+        { staff = Pg.hasOne Staff
         }
 
 

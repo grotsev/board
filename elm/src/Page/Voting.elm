@@ -1,5 +1,6 @@
 module Page.Voting exposing (..)
 
+import Bootstrap.ListGroup as ListGroup
 import Html exposing (Html)
 import Http
 import Postgrest as Pg
@@ -14,13 +15,19 @@ import Uuid exposing (Uuid)
 type alias Voting =
     { voting : Uuid
     , title : String
+    , option : List Option
     }
 
 
 type alias Option =
     { option : Uuid
     , title : String
-    , staff : List Staff
+    , vote : List Vote
+    }
+
+
+type alias Vote =
+    { staff : Maybe Staff
     }
 
 
@@ -38,13 +45,29 @@ type alias State =
 votingCmd : String -> Uuid -> Cmd Msg
 votingCmd token voting =
     let
+        votingQuery =
+            Pg.query Resource.voting Voting
+                |> Pg.select .voting
+                |> Pg.select .title
+                |> Pg.includeMany .option Pg.noLimit optionQuery
+                |> Pg.filter [ .voting |> Pg.eq voting ]
+
         optionQuery =
             Pg.query Resource.option Option
+                |> Pg.select .option
+                |> Pg.select .title
+                |> Pg.includeMany .vote Pg.noLimit voteQuery
+
+        voteQuery =
+            Pg.query Resource.vote Vote
+                |> Pg.include .staff staffQuery
+
+        staffQuery =
+            Pg.query Resource.staff Staff
+                |> Pg.select .name
+                |> Pg.select .surname
     in
-    Pg.query Resource.voting Voting
-        |> Pg.select .voting
-        |> Pg.select .title
-        |> Pg.filter [ .voting |> Pg.eq voting ]
+    votingQuery
         |> Pg.first "http://localhost:3001/" (Just token)
         |> Http.send Fetch
 
@@ -59,9 +82,20 @@ init token voting =
 
 
 view : State -> List (Html msg)
-view model =
-    [ Html.h2 [] [ Html.text "Ok" ]
-    ]
+view state =
+    case state.voting of
+        Nothing ->
+            [ Html.text "Loading" ]
+
+        Just voting ->
+            [ Html.h2 [] [ Html.text "Ok" ]
+            , ListGroup.ul <| List.map viewOption voting.option
+            ]
+
+
+viewOption : Option -> ListGroup.Item msg
+viewOption option =
+    ListGroup.li [] [ Html.text option.title ]
 
 
 
