@@ -562,7 +562,7 @@ selectsToKeyValueHelper (Parameters params) =
         selection =
             String.join "," (params.select ++ embedded)
     in
-    params.name ++ "{" ++ selection ++ "}"
+    params.name ++ "(" ++ selection ++ ")"
 
 
 {-| -}

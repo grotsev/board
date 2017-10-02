@@ -29,6 +29,6 @@ create extension "uuid-ossp";
 create extension "pgcrypto";
 create extension "pgjwt";
 create extension "pgtap";
-alter database $database set board.jwt_secret to 'board'
+alter database $database set board.jwt_secret to 'board secret minimum 32 characters'
 EOF
 done
