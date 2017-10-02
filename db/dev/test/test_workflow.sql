@@ -21,14 +21,14 @@ begin
 
   -- Birthday of Alice
   perform mock_login('bob', 'secret');
-  select new_voting('День рождения: Алиса') into voting;
+  select new_voting('День рождения 2017-01-31 Алиса') into voting;
   select new_option(voting, 'Цветы') into option_flower;
   select new_option(voting, 'Подарочный сертификат') into option_cert;
   perform new_vote(voting, option_flower);
 
   -- Birthday of Charlie
   perform mock_login('alice', 'secret');
-  select new_voting('День рождения: Чарли') into voting;
+  select new_voting('День рождения 2017-02-02 Чарли') into voting;
   select new_option(voting, 'Марс') into option_mars;
   select new_option(voting, 'Сникерс') into option_snickers;
   perform new_vote(voting, option_mars);

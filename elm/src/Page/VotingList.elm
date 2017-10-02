@@ -6,6 +6,7 @@ import Http
 import Postgrest as Pg
 import Resource
 import Rocket exposing ((=>))
+import Route
 import Uuid exposing (Uuid)
 
 
@@ -58,7 +59,9 @@ view { votingList } =
 row : Voting -> Table.Row msg
 row voting =
     Table.tr []
-        [ Table.td [] [ Html.text voting.title ]
+        [ Table.td []
+            [ Html.a [ Route.href <| Route.Voting voting.voting ] [ Html.text voting.title ]
+            ]
         ]
 
 
