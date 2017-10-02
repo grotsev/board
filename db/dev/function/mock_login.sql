@@ -1,26 +1,24 @@
 create function mock_login
 ( login    textfield
 , password textfield
-, out staff        uuid
-, out role         name
-, out exp          int4
-, out surname textfield
-, out name    textfield
-, out token        text
-)
+) returns auth
   language plpgsql
 as $function$
+declare
+  auth auth;
 begin
-  select (login(login, password)).* into staff, role, exp, surname, name, token;
+  select (login(login, password)).* into auth;
 
   if not found then -- TODO check not found select login() or from login()
     raise 'Fail to authenticate(%, %)', login, password;
   end if;
 
-  execute $$set local request.jwt.claim.staff = '$$ || staff || $$'$$;
-  execute $$set local request.jwt.claim.role  = '$$ || role  || $$'$$;
-  execute $$set local request.jwt.claim.exp   = '$$ || exp   || $$'$$;
-  execute $$set local role $$ || role;
+  execute $$set local request.jwt.claim.staff = '$$ || auth.staff || $$'$$;
+  execute $$set local request.jwt.claim.role  = '$$ || auth.role  || $$'$$;
+  execute $$set local request.jwt.claim.exp   = '$$ || auth.exp   || $$'$$;
+  execute $$set local role $$                       || auth.role;
+
+  return auth;
 end;
 $function$;
 

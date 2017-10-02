@@ -10,13 +10,14 @@ declare
   option_cert uuid;
 begin
 
-  perform register('pet', 'secret', 'Петров', 'Иван', date '1980-01-31');
-  perform register('nic', 'secret', 'Николаева', 'Вера', date '1980-02-01');
+  perform register('alice', 'secret', 'Лиса', 'Алиса', date '1980-01-31');
+  perform register('bob', 'secret', 'Губка', 'Боб', date '1980-02-01');
+  perform register('charlie', 'secret', 'Шоколадный', 'Чарли', date '1980-02-02');
 
-  return next throws_ok($$select login('pet', 'secreZ')$$, 'A0001', 'Invalid login and password', 'Wrong pasword');
-  return next is((login('pet', 'secret')).role, 'staff', 'Right pasword');
+  return next throws_ok($$select login('alice', 'secreZ')$$, 'A0001', 'Invalid login and password', 'Wrong pasword');
+  return next is((login('alice', 'secret')).role, 'staff', 'Right pasword');
 
-  perform mock_login('pet', 'secret');
+  perform mock_login('alice', 'secret');
 
   select new_voting('День рождения Веры') into voting;
 
