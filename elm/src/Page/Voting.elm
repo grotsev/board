@@ -32,7 +32,8 @@ type alias Vote =
 
 
 type alias Staff =
-    { name : String
+    { staff : Uuid
+    , name : String
     , surname : String
     }
 
@@ -64,6 +65,7 @@ votingCmd token voting =
 
         staffQuery =
             Pg.query Resource.staff Staff
+                |> Pg.select .staff
                 |> Pg.select .name
                 |> Pg.select .surname
     in
