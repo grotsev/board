@@ -26,6 +26,10 @@ begin
   select new_option(voting, 'Подарочный сертификат') into option_cert;
   perform new_vote(voting, option_flower);
 
+  perform mock_login('charlie', 'secret');
+  perform new_vote(voting, option_flower);
+  perform new_vote(voting, option_cert);
+
   -- Birthday of Charlie
   perform mock_login('alice', 'secret');
   select new_voting('День рождения 2017-02-02 Чарли') into voting;

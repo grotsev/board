@@ -1,7 +1,9 @@
 module Page.Voting exposing (..)
 
+import Bootstrap.Badge as Badge
 import Bootstrap.ListGroup as ListGroup
 import Html exposing (Html)
+import Html.Attributes as Attr
 import Http
 import Postgrest as Pg
 import Resource
@@ -97,7 +99,31 @@ view state =
 
 viewOption : Option -> ListGroup.Item msg
 viewOption option =
-    ListGroup.li [] [ Html.text option.title ]
+    ListGroup.li [ ListGroup.attrs [ Attr.class "justify-content-between" ] ]
+        [ Html.text option.title
+        , viewPill option.vote
+        ]
+
+
+viewPill : List Vote -> Html msg
+viewPill listVote =
+    Badge.pill
+        [ listVote
+            |> List.filterMap .staff
+            |> List.map fullName
+            |> String.join ", "
+            |> Attr.title
+        ]
+        [ listVote
+            |> List.length
+            |> Basics.toString
+            |> Html.text
+        ]
+
+
+fullName : Staff -> String
+fullName staff =
+    String.join " " [ staff.surname, staff.name ]
 
 
 
