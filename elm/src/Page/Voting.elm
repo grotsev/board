@@ -1,6 +1,7 @@
 module Page.Voting exposing (..)
 
 import Bootstrap.Badge as Badge
+import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.ListGroup as ListGroup
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -99,16 +100,24 @@ view state =
 
 viewOption : Option -> ListGroup.Item msg
 viewOption option =
-    ListGroup.li [ ListGroup.attrs [ Attr.class "justify-content-between" ] ]
-        [ Html.text option.title
+    let
+        isMe x =
+            True
+
+        -- TODO
+    in
+    ListGroup.li []
+        [ Checkbox.checkbox [ Checkbox.checked <| List.any isMe <| List.filterMap .staff <| option.vote ] ""
         , viewPill option.vote
+        , Html.text option.title
         ]
 
 
 viewPill : List Vote -> Html msg
 viewPill listVote =
     Badge.pill
-        [ listVote
+        [ Attr.class "mx-sm-3"
+        , listVote
             |> List.filterMap .staff
             |> List.map fullName
             |> String.join ", "
