@@ -138,7 +138,7 @@ subscriptions model =
         [ pageSubscriptions
         , Navbar.subscriptions model.navbarState NavbarMsg
         , WebSocket.listen channel WebSocketMessage
-        , Time.every (5 * Time.second) TimeMsg
+        , Time.every (500 * Time.second) TimeMsg
         ]
 
 
