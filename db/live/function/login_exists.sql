@@ -2,7 +2,8 @@ create or replace function login_exists
 ( login   textfield
 ) returns boolean
   language sql
-  volatile
+  stable
+  strict
   security definer
 as $function$
 

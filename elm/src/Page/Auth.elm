@@ -11,6 +11,7 @@ import Html.Attributes as Attr
 import Postgrest
 import Rocket exposing ((=>))
 import Rpc
+import Uuid exposing (Uuid)
 import Validate exposing (Validation)
 
 
@@ -227,8 +228,8 @@ type Msg
     | TabMsg Tab.State
 
 
-update : Msg -> State -> ( State, Cmd Msg )
-update msg state =
+update : Msg -> Uuid -> State -> ( State, Cmd Msg )
+update msg seance state =
     case msg of
         LoginMsg login ->
             ( { state | login = login, loginExistsResponse = Nothing }
@@ -252,13 +253,26 @@ update msg state =
 
         LoginRequest ->
             ( { state | authLoading = True }
-            , Postgrest.send AuthResult <| Rpc.login Nothing state
+            , { seance = seance
+              , login = state.login
+              , password = state.password
+              }
+                |> Rpc.login Nothing
+                |> Postgrest.send AuthResult
             )
 
         RegisterRequest ->
             ( { state | authLoading = True }
-            , Postgrest.send AuthResult <|
-                Rpc.register Nothing { state | dob = Maybe.withDefault (Date.fromTime 0) state.dob }
+            , { seance = seance
+              , login = state.login
+              , password = state.password
+              , passwordAgain = state.passwordAgain
+              , name = state.name
+              , surname = state.surname
+              , dob = Maybe.withDefault (Date.fromTime 0) state.dob
+              }
+                |> Rpc.register Nothing
+                |> Postgrest.send AuthResult
             )
 
         AuthResult result ->

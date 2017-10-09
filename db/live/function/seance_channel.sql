@@ -7,7 +7,7 @@ create or replace function seance_channel
   security definer
 as $function$
 
-  select channel('seance/uuid');
+  select channel('seance/' || seance);
 
 $function$;
 

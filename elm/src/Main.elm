@@ -13,9 +13,12 @@ import Page.Home
 import Page.NotFound
 import Page.Voting
 import Page.VotingList
+import Postgrest
+import Random.Pcg as Random
 import Rocket exposing ((=>))
 import Route exposing (Route)
-import Time exposing (Time)
+import Rpc
+import Uuid exposing (Uuid)
 import WebSocket
 
 
@@ -35,6 +38,8 @@ type alias Model =
     , maybeRoute : Maybe Route
     , page : Page
     , authState : Page.Auth.State
+    , seance : Maybe Uuid
+    , seanceChannel : Maybe String
     }
 
 
@@ -50,9 +55,14 @@ init flags location =
                 , maybeRoute = Route.fromLocation location
                 , page = Home
                 , authState = Page.Auth.init
+                , seance = Nothing
+                , seanceChannel = Nothing
                 }
+
+        randomUuidCmd =
+            Random.generate RandomSessionUuidMsg Uuid.uuidGenerator
     in
-    model ! [ navbarCmd, pageCmd ]
+    model ! [ navbarCmd, pageCmd, randomUuidCmd ]
 
 
 
@@ -112,11 +122,6 @@ viewPage page auth =
 -- SUBSCRIPTIONS --
 
 
-channel : String
-channel =
-    "ws://echo.websocket.org"
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
@@ -133,12 +138,19 @@ subscriptions model =
 
                 Voting _ ->
                     Sub.none
+
+        seanceChannelSubscriptions =
+            case model.seanceChannel of
+                Nothing ->
+                    Sub.none
+
+                Just channel ->
+                    WebSocket.listen ("ws://localhost:3002/" ++ channel) WebSocketMessage
     in
     Sub.batch
         [ pageSubscriptions
         , Navbar.subscriptions model.navbarState NavbarMsg
-        , WebSocket.listen channel WebSocketMessage
-        , Time.every (500 * Time.second) TimeMsg
+        , seanceChannelSubscriptions
         ]
 
 
@@ -154,7 +166,8 @@ type Msg
     | VotingListMsg Page.VotingList.Msg
     | VotingMsg Page.Voting.Msg
     | WebSocketMessage String
-    | TimeMsg Time
+    | RandomSessionUuidMsg Uuid
+    | SeanceChannelResult (Postgrest.Result String)
 
 
 routeToPage : Model -> ( Model, Cmd Msg )
@@ -203,7 +216,7 @@ update msg model =
         AuthMsg subMsg ->
             let
                 ( authState, authCmd ) =
-                    Page.Auth.update subMsg model.authState
+                    Page.Auth.update subMsg (Maybe.withDefault (Debug.crash "nonsence") model.seance) model.authState
 
                 ( routeModel, routeCmd ) =
                     routeToPage { model | authState = authState }
@@ -240,8 +253,15 @@ update msg model =
         WebSocketMessage message ->
             Debug.log message (model => Cmd.none)
 
-        TimeMsg time ->
-            model => WebSocket.send channel "Hi"
+        RandomSessionUuidMsg uuid ->
+            let
+                cmd =
+                    Postgrest.send SeanceChannelResult <| Rpc.seanceChannel Nothing { seance = uuid }
+            in
+            { model | seance = Just uuid } => cmd
+
+        SeanceChannelResult seanceChannelResult ->
+            { model | seanceChannel = Result.toMaybe seanceChannelResult } => Cmd.none
 
 
 
