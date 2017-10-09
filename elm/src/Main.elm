@@ -15,6 +15,8 @@ import Page.Voting
 import Page.VotingList
 import Rocket exposing ((=>))
 import Route exposing (Route)
+import Time exposing (Time)
+import WebSocket
 
 
 type Page
@@ -110,6 +112,11 @@ viewPage page auth =
 -- SUBSCRIPTIONS --
 
 
+channel : String
+channel =
+    "ws://echo.websocket.org"
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
@@ -130,6 +137,8 @@ subscriptions model =
     Sub.batch
         [ pageSubscriptions
         , Navbar.subscriptions model.navbarState NavbarMsg
+        , WebSocket.listen channel WebSocketMessage
+        , Time.every (5 * Time.second) TimeMsg
         ]
 
 
@@ -144,6 +153,8 @@ type Msg
     | LogoutMsg
     | VotingListMsg Page.VotingList.Msg
     | VotingMsg Page.Voting.Msg
+    | WebSocketMessage String
+    | TimeMsg Time
 
 
 routeToPage : Model -> ( Model, Cmd Msg )
@@ -225,6 +236,12 @@ update msg model =
 
                 _ ->
                     model => Cmd.none
+
+        WebSocketMessage message ->
+            Debug.log message (model => Cmd.none)
+
+        TimeMsg time ->
+            model => WebSocket.send channel "Hi"
 
 
 
