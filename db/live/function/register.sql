@@ -1,5 +1,6 @@
 create or replace function register
-( login       textfield
+( seance      uuid
+, login       textfield
 , password    textfield
 , surname     textfield
 , name        textfield
@@ -28,9 +29,9 @@ as $function$
     , crypt(register.password, gen_salt('bf'))
     );
 
-  select login(login, password);
+  select login(seance, login, password);
 
 $function$;
 
-comment on function register(textfield,textfield,textfield,textfield,date) is
+comment on function register(uuid,textfield,textfield,textfield,textfield,date) is
   'Зарегистрировать нового сотрудника';

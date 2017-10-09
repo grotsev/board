@@ -1,5 +1,6 @@
 create or replace function login
-( login       textfield
+( seance      uuid
+, login       textfield
 , password    textfield
 ) returns auth
   language plpgsql
@@ -17,7 +18,7 @@ begin
        , t.surname
        , t.name
        , sign
-        ( row_to_json(row( t.staff, t.role, t.exp )::jwt_token)
+        ( row_to_json(row( t.staff, t.role, t.exp, seance )::jwt_token)
         , current_setting('board.jwt_secret')
         ) as token
   from (
@@ -44,5 +45,5 @@ begin
 end;
 $function$;
 
-comment on function login(textfield,textfield) is
+comment on function login(uuid, textfield,textfield) is
   'Проверяет, что пароль соответствует логину и генерирует JWT токен под ролью staff на день';

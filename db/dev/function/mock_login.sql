@@ -1,5 +1,6 @@
 create function mock_login
-( login    textfield
+( seance      uuid
+, login    textfield
 , password textfield
 ) returns auth
   language plpgsql
@@ -7,7 +8,7 @@ as $function$
 declare
   auth auth;
 begin
-  select (login(login, password)).* into auth;
+  select (login(seance, login, password)).* into auth;
 
   if not found then -- TODO check not found select login() or from login()
     raise 'Fail to authenticate(%, %)', login, password;
@@ -22,5 +23,5 @@ begin
 end;
 $function$;
 
-comment on function mock_login(textfield,textfield) is
+comment on function mock_login(uuid,textfield,textfield) is
   'Тестовая версия проверяет, что пароль соответствует логину и генерирует JWT токен под ролью staff на день и инициализирует GUC';
